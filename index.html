@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GuitarSound</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="img/guitar logo.png">
+
+  <!-- Fonte Tiny5 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container">
+    <!-- Botão de contraste -->
+    <img id="contrast-toggle" src="img/contraste.png" alt="Contraste">
+    <img id="settings-toggle" src="img/engrenagem.png" alt="Configurações">
+
+    <div id="settings-overlay"></div>
+
+    <div id="settings-menu">
+      <h2>Configurações do Site</h2>
+      <p><strong>Criador:</strong> Seu Nome Aqui 🤘</p>
+      <p><strong>Teclas do site:</strong></p>
+      <ul>
+        <li><b>Insert</b> → Reinicia a música</li>
+        <li><b>0</b> → Reinicia a música</li>
+        <li><b>K</b> → Pausa/Resume a música</li>
+        <li><b>ESC</b> → Fecha o menu</li>
+      </ul>
+    </div>
+
+    <!-- Barra de progresso + ícones -->
+    <div class="progress-container">
+      <div class="controls-left">
+        <img id="back-btn" src="img/back.png" alt="Voltar música">
+        <img id="loop-btn" src="img/loop.png" alt="Loop">
+      </div>
+
+      <div class="progress-center">
+        <span id="current-time">0:00</span>
+        <div id="progress-bar">
+          <div id="progress-fill"></div>
+          <div id="progress-thumb"></div>
+        </div>
+        <span id="total-time">0:00</span>
+      </div>
+
+      <div class="controls-right">
+        <img id="skip-btn" src="img/skip.png" alt="Avançar música">
+      </div>
+    </div>
+
+    <!-- Fogo atrás da guitarra -->
+    <img id="fire" src="img/chamas.gif" alt="Fogo">
+
+    <!-- Amplificador à esquerda -->
+    <div class="amp-container">
+      <img id="amp" src="img/amplificador marshall.png" alt="Amplificador">
+      <img id="amp-on" src="img/ligado.png" alt="Ligado">
+      <img id="amp-off" src="img/desligado.png" alt="Desligado">
+
+      <!-- Barrinha de volume -->
+      <div class="amp-control">
+        <span id="amp-label">Vol.</span>
+        <div id="amp-bar">
+          <div id="amp-slider"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guitarra central -->
+    <div class="guitar-container">
+      <img id="guitarra" src="guitars/Stratocaster-PHX-Ciano de teteujoga.png" alt="Guitarra">
+      <div id="play-icon">▶</div>
+      <div id="pause-icon">⏸</div>
+    </div>
+  </div>
+
+  <audio id="som" src="msc/Everlong - Foo Fighters.mp3"></audio>
+  <audio id="block1" src="effects/block 1.mp3"></audio>
+  <audio id="block2" src="effects/block 2.mp3"></audio>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
