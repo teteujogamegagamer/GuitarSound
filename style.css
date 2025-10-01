@@ -5,29 +5,35 @@ body {
   justify-content: center;
   align-items: center;
   background-color: rgb(47, 45, 45);
+  overflow-x: hidden; /* impede scroll lateral */
+  transition: background-color 0.3s ease, color 0.3s ease;
+  color: white; /* fontes brancas no padrão */
 }
 
 .container {
   display: flex;
   align-items: center;
   position: relative;
+  flex-wrap: wrap; /* ajuda no ajuste em telas menores */
 }
 
 .amp-container {
   position: relative;
-  margin-right: 50px;
+  margin-right: 3vw; /* proporcional à tela */
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 #guitarra {
-  width: 250px;
+  width: 20vw; /* proporcional à largura da tela */
+  max-width: 250px;
   cursor: pointer;
   transition: transform 0.1s ease;
   filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
   position: relative;
   z-index: 2;
+  user-select: none; /* evita seleção */
 }
 
 #guitarra:active {
@@ -43,7 +49,8 @@ body {
   top: 50%;
   left: 60%;
   transform: translate(-50%, -50%);
-  width: 300px;
+  width: 25vw; /* proporcional */
+  max-width: 300px;
   height: auto;
   opacity: 0;
   transition: opacity 0.6s ease-in;
@@ -56,7 +63,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(1);
-  font-size: 96px;
+  font-size: clamp(48px, 8vw, 96px);
   color: rgba(0,0,0,0.9);
   opacity: 0;
   transition: opacity 0.4s ease-out, transform 0.1s ease-out;
@@ -67,11 +74,13 @@ body {
 }
 
 #amp {
-  width: 180px;
+  width: 15vw;
+  max-width: 180px;
   height: auto;
   cursor: pointer;
   transition: transform 0.1s ease;
   filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+  user-select: none; /* evita seleção */
 }
 
 #amp:active {
@@ -88,7 +97,8 @@ body {
   pointer-events: none;
   z-index: 9999;
   transition: opacity 0.3s ease-out;
-  width: 120px;
+  width: 10vw;
+  max-width: 120px;
   height: auto;
 }
 
@@ -96,30 +106,34 @@ body {
   display: none;
   flex-direction: row;
   align-items: center;
-  margin-top: 5px;
+  margin-top: 0.5vh;
 }
 
 #amp-label {
   font-family: "Tiny5", sans-serif;
-  font-size: 14px;
-  color: white;
-  margin-right: 8px;
-  user-select: none;
+  font-size: 1.2vw;
+  color: white; /* padrão branco */
+  margin-right: 1vw;
+  user-select: none; /* evita seleção */
 }
 
 #amp-bar {
   position: relative;
-  width: 120px;
-  height: 10px;
+  width: 10vw;
+  max-width: 120px;
+  height: 1vh;
   background-color: black;
   border-radius: 5px;
   cursor: pointer;
   box-shadow: 0 0 12px rgba(0,0,0,0.6);
+  user-select: none; /* evita seleção */
 }
 
 #amp-slider {
-  width: 20px;
-  height: 20px;
+  width: 1.5vw;
+  max-width: 20px;
+  height: 1.5vw;
+  max-height: 20px;
   background-color: rgb(255, 255, 255);
   border-radius: 50%;
   position: absolute;
@@ -127,46 +141,51 @@ body {
   left: 0;
   transform: translateY(-50%);
   cursor: pointer;
+  user-select: none; /* evita seleção */
 }
 
 .progress-container {
   position: absolute;
-  bottom: -70px;
+  bottom: -10vh;
   left: 50%;
   transform: translateX(-50%);
-  width: 60%;
+  width: clamp(250px, 60%, 700px);
   display: flex;
   align-items: center;
   font-family: "Tiny5", sans-serif;
-  color: white;
+  color: white; /* padrão branco */
   user-select: none;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .progress-center {
   display: flex;
   align-items: center;
   flex: 1;
-  margin: 0 10px;
+  margin: 0 1vw;
   z-index: 1;
 }
 
 #current-time,
 #total-time {
-  font-size: 14px;
-  width: 40px;
+  font-size: 1vw;
+  min-width: 40px;
   text-align: center;
+  color: white; /* padrão branco */
 }
 
 #progress-bar {
   flex: 1;
-  height: 6px;
+  height: 0.8vh;
   background-color: rgba(255,255,255,0.3);
-  margin: 0 10px;
+  margin: 0 1vw;
   border-radius: 3px;
   position: relative;
   box-shadow: 0 0 12px rgba(0,0,0,0.6);
+  width: 100%;
   min-width: 140px;
+  max-width: 600px;
 }
 
 #progress-fill {
@@ -178,8 +197,10 @@ body {
 }
 
 #progress-thumb {
-  width: 16px;
-  height: 16px;
+  width: 1.2vw;
+  max-width: 16px;
+  height: 1.2vw;
+  max-height: 16px;
   background-color: white;
   border-radius: 50%;
   position: absolute;
@@ -188,6 +209,7 @@ body {
   transform: translate(-50%, -50%);
   cursor: pointer;
   z-index: 5;
+  user-select: none; /* evita seleção */
 }
 
 .controls-left,
@@ -197,27 +219,29 @@ body {
   transform: translateY(-50%);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 1vw;
   z-index: 10;
 }
 
 .controls-left {
-  left: -70px;
+  left: -5vw;
 }
 
 .controls-right {
-  right: -70px;
+  right: -5vw;
 }
 
 .controls-left img,
 .controls-right img {
-  width: 28px;
-  height: 28px;
+  width: 2vw;
+  max-width: 28px;
+  height: auto;
   cursor: pointer;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
   transition: filter 0.2s ease, transform 0.1s ease;
   background: transparent;
   border-radius: 4px;
+  user-select: none; /* evita seleção */
 }
 
 .controls-left img:active,
@@ -225,34 +249,68 @@ body {
   transform: scale(0.9);
 }
 
+/* Loop ativo no tema escuro */
 #loop-btn.active {
-  filter: drop-shadow(0 0 8px lime);
+  filter: invert(1) drop-shadow(0 0 8px lime); /* ícone branco + sombra verde */
 }
 
-#contrast-toggle {
-  position: absolute;
-  top: -200px;
-  right: -480px;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
-  user-select: none;
-  z-index: 30000;
+/* Loop ativo no modo claro */
+body.light-mode #loop-btn.active {
+  filter: invert(0) drop-shadow(0 0 8px lime); /* ícone preto + sombra verde */
 }
 
+/* Ícones fixos no topo direito */
+#contrast-toggle,
 #settings-toggle {
-  position: absolute;
-  top: -200px;
-  right: -530px;
-  width: 40px;
-  height: 40px;
+  position: fixed;
+  top: 2vh;
+  width: 3vw;
+  max-width: 40px;
+  height: auto;
   cursor: pointer;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
   user-select: none;
   z-index: 30000;
+  transition: transform 0.15s ease, filter 0.3s ease;
 }
 
+#contrast-toggle { right: 2vw; }
+#settings-toggle { right: calc(2vw + 50px); }
+
+/* Classe para o modo claro */
+body.light-mode {
+  background-color: #fff;
+  color: black; /* fontes ficam pretas no modo claro */
+}
+
+/* Força timers e labels no modo claro */
+body.light-mode #current-time,
+body.light-mode #total-time,
+body.light-mode #amp-label,
+body.light-mode #settings-menu {
+  color: black;
+}
+
+/* Ícones brancos no tema padrão */
+#back-btn,
+#loop-btn,
+#skip-btn,
+#contrast-toggle,
+#settings-toggle {
+  filter: invert(1);
+  transition: filter 0.3s ease;
+}
+
+/* Ícones pretos no modo claro */
+body.light-mode #back-btn,
+body.light-mode #loop-btn,
+body.light-mode #skip-btn,
+body.light-mode #contrast-toggle,
+body.light-mode #settings-toggle {
+  filter: invert(0);
+}
+
+/* Overlay e menu */
 #settings-menu {
   position: fixed;
   top: 50%;
@@ -270,7 +328,7 @@ body {
   overflow-y: auto;
   padding: 20px;
   font-family: "Tiny5", sans-serif;
-  color: black;
+  color: white; /* padrão branco */
 }
 
 #settings-menu.active {
@@ -285,7 +343,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.5);
   z-index: 9997;
   opacity: 0;
   pointer-events: none;
@@ -295,19 +353,4 @@ body {
 #settings-overlay.active {
   opacity: 1;
   pointer-events: auto;
-}
-
-img {
-  user-select: none;
-  pointer-events: auto;
-}
-
-.light-mode {
-  background-color: rgb(230, 230, 230);
-}
-
-.light-mode #amp-label,
-.light-mode #current-time,
-.light-mode #total-time {
-  color: black;
 }
