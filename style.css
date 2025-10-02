@@ -5,35 +5,35 @@ body {
   justify-content: center;
   align-items: center;
   background-color: rgb(47, 45, 45);
-  overflow-x: hidden; /* impede scroll lateral */
+  overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
-  color: white; /* fontes brancas no padrão */
+  color: white;
 }
 
 .container {
   display: flex;
   align-items: center;
   position: relative;
-  flex-wrap: wrap; /* ajuda no ajuste em telas menores */
+  flex-wrap: wrap;
 }
 
 .amp-container {
   position: relative;
-  margin-right: 3vw; /* proporcional à tela */
+  margin-right: 3vw;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 #guitarra {
-  width: 20vw; /* proporcional à largura da tela */
+  width: 20vw;
   max-width: 250px;
   cursor: pointer;
   transition: transform 0.1s ease;
   filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
   position: relative;
   z-index: 2;
-  user-select: none; /* evita seleção */
+  user-select: none;
 }
 
 #guitarra:active {
@@ -49,7 +49,7 @@ body {
   top: 50%;
   left: 60%;
   transform: translate(-50%, -50%);
-  width: 25vw; /* proporcional */
+  width: 25vw;
   max-width: 300px;
   height: auto;
   opacity: 0;
@@ -80,7 +80,7 @@ body {
   cursor: pointer;
   transition: transform 0.1s ease;
   filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
-  user-select: none; /* evita seleção */
+  user-select: none;
 }
 
 #amp:active {
@@ -112,9 +112,9 @@ body {
 #amp-label {
   font-family: "Tiny5", sans-serif;
   font-size: 1.2vw;
-  color: white; /* padrão branco */
+  color: white;
   margin-right: 1vw;
-  user-select: none; /* evita seleção */
+  user-select: none;
 }
 
 #amp-bar {
@@ -126,7 +126,7 @@ body {
   border-radius: 5px;
   cursor: pointer;
   box-shadow: 0 0 12px rgba(0,0,0,0.6);
-  user-select: none; /* evita seleção */
+  user-select: none;
 }
 
 #amp-slider {
@@ -141,7 +141,7 @@ body {
   left: 0;
   transform: translateY(-50%);
   cursor: pointer;
-  user-select: none; /* evita seleção */
+  user-select: none;
 }
 
 .progress-container {
@@ -153,7 +153,7 @@ body {
   display: flex;
   align-items: center;
   font-family: "Tiny5", sans-serif;
-  color: white; /* padrão branco */
+  color: white;
   user-select: none;
   justify-content: center;
   flex-wrap: wrap;
@@ -172,7 +172,7 @@ body {
   font-size: 1vw;
   min-width: 40px;
   text-align: center;
-  color: white; /* padrão branco */
+  color: white;
 }
 
 #progress-bar {
@@ -209,7 +209,7 @@ body {
   transform: translate(-50%, -50%);
   cursor: pointer;
   z-index: 5;
-  user-select: none; /* evita seleção */
+  user-select: none;
 }
 
 .controls-left,
@@ -241,7 +241,7 @@ body {
   transition: filter 0.2s ease, transform 0.1s ease;
   background: transparent;
   border-radius: 4px;
-  user-select: none; /* evita seleção */
+  user-select: none;
 }
 
 .controls-left img:active,
@@ -249,14 +249,12 @@ body {
   transform: scale(0.9);
 }
 
-/* Loop ativo no tema escuro */
 #loop-btn.active {
-  filter: invert(1) drop-shadow(0 0 8px lime); /* ícone branco + sombra verde */
+  filter: invert(1) drop-shadow(0 0 8px lime);
 }
 
-/* Loop ativo no modo claro */
 body.light-mode #loop-btn.active {
-  filter: invert(0) drop-shadow(0 0 8px lime); /* ícone preto + sombra verde */
+  filter: invert(0) drop-shadow(0 0 8px lime);
 }
 
 /* Ícones fixos no topo direito */
@@ -275,15 +273,14 @@ body.light-mode #loop-btn.active {
 }
 
 #contrast-toggle { right: 2vw; }
-#settings-toggle { right: calc(2vw + 50px); }
+/* corrigido: engrenagem fixa junto com contraste */
+#settings-toggle { right: calc(2vw + 4vw + 10px); }
 
-/* Classe para o modo claro */
 body.light-mode {
   background-color: #fff;
-  color: black; /* fontes ficam pretas no modo claro */
+  color: black;
 }
 
-/* Força timers e labels no modo claro */
 body.light-mode #current-time,
 body.light-mode #total-time,
 body.light-mode #amp-label,
@@ -291,7 +288,6 @@ body.light-mode #settings-menu {
   color: black;
 }
 
-/* Ícones brancos no tema padrão */
 #back-btn,
 #loop-btn,
 #skip-btn,
@@ -301,7 +297,6 @@ body.light-mode #settings-menu {
   transition: filter 0.3s ease;
 }
 
-/* Ícones pretos no modo claro */
 body.light-mode #back-btn,
 body.light-mode #loop-btn,
 body.light-mode #skip-btn,
@@ -318,7 +313,7 @@ body.light-mode #settings-toggle {
   transform: translate(-50%, -50%) scale(0.95);
   width: 80%;
   height: 80%;
-  background: rgba(75, 70, 70, 0.95);
+  background: rgba(150, 150, 150, 0.95);
   border-radius: 12px;
   box-shadow: 0 0 30px rgba(0,0,0,0.7);
   z-index: 9998;
@@ -328,7 +323,7 @@ body.light-mode #settings-toggle {
   overflow-y: auto;
   padding: 20px;
   font-family: "Tiny5", sans-serif;
-  color: white; /* padrão branco */
+  color: white;
 }
 
 #settings-menu.active {
@@ -353,4 +348,47 @@ body.light-mode #settings-toggle {
 #settings-overlay.active {
   opacity: 1;
   pointer-events: auto;
+}
+
+#close-menu {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 50px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+  display: none;
+  z-index: 10000;
+}
+
+#close-menu:active {
+  transform: scale(0.85);
+}
+
+#settings-menu.active #close-menu {
+  display: block;
+}
+
+#queue-btn {
+  width: 3vw;
+  max-width: 40px;
+  height: auto;
+  cursor: pointer;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+  transition: transform 0.1s ease, filter 0.3s ease;
+  user-select: none;
+}
+
+#queue-btn:active {
+  transform: scale(0.9);
+}
+
+#queue-btn {
+  filter: invert(1) drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+}
+
+body.light-mode #queue-btn {
+  filter: invert(0) drop-shadow(0 2px 6px rgba(0,0,0,0.6));
 }
