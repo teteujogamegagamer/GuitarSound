@@ -209,24 +209,70 @@ document.addEventListener("keydown", (e) => {
 
 // ---------------- Contraste / Menu ----------------
 const contrastBtn = document.getElementById("contrast-toggle");
-if (contrastBtn) contrastBtn.addEventListener("click", () => document.body.classList.toggle("light-mode"));
-
 const settingsToggle = document.getElementById("settings-toggle");
 const settingsMenu = document.getElementById("settings-menu");
 const settingsOverlay = document.getElementById("settings-overlay");
+const closeMenuBtn = document.getElementById("close-menu");
 
-if (settingsToggle) settingsToggle.addEventListener("click", () => {
-  settingsMenu.classList.toggle("active");
-  settingsOverlay.classList.toggle("active");
-});
-if (settingsOverlay) settingsOverlay.addEventListener("click", () => {
+const abrirMenu = document.getElementById("abrirMenu");
+const fecharMenu = document.getElementById("fecharMenu");
+
+function abrirMenuSite() {
+  settingsMenu.classList.add("active");
+  settingsOverlay.classList.add("active");
+  if (abrirMenu) { abrirMenu.currentTime = 0; abrirMenu.play().catch(()=>{}); }
+}
+
+function fecharMenuSite() {
   settingsMenu.classList.remove("active");
   settingsOverlay.classList.remove("active");
-});
+  if (fecharMenu) { fecharMenu.currentTime = 0; fecharMenu.play().catch(()=>{}); }
+}
+
+function clickAnimation(el) {
+  if (!el) return;
+  el.style.transform = "scale(0.9)";
+  setTimeout(() => el.style.transform = "scale(1)", 150);
+}
+
+if (contrastBtn) {
+  contrastBtn.addEventListener("click", () => {
+    document.body.classList.toggle("light-mode"); 
+    clickAnimation(contrastBtn);
+  });
+}
+
+if (settingsToggle) {
+  settingsToggle.addEventListener("click", () => {
+    if (settingsMenu.classList.contains("active")) {
+      fecharMenuSite();
+    } else {
+      abrirMenuSite();
+    }
+    clickAnimation(settingsToggle);
+  });
+}
+
+if (closeMenuBtn) {
+  closeMenuBtn.addEventListener("click", () => {
+    clickAnimation(closeMenuBtn);
+    fecharMenuSite();
+  });
+}
+
+if (settingsOverlay) {
+  settingsOverlay.addEventListener("click", () => {
+    fecharMenuSite();
+  });
+}
+
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
-    settingsMenu.classList.remove("active");
-    settingsOverlay.classList.remove("active");
+    if (settingsMenu.classList.contains("active")) {
+      fecharMenuSite();
+    } else {
+      abrirMenuSite();
+    }
   }
 });
 
@@ -239,13 +285,11 @@ function changeTrack(index, autoPlay = true) {
   som.src = playlist[currentIndex];
   som.load();
 
-  // Reseta barra e tempos
   progressFill.style.width = '0%';
   progressThumb.style.left = '0%';
   currentTimeEl.textContent = formatTime(0);
   totalTimeEl.textContent = formatTime(0);
 
-  // Atualiza tempo total da nova faixa
   som.addEventListener("loadedmetadata", () => {
     totalTimeEl.textContent = formatTime(som.duration);
     updateProgress();
@@ -282,3 +326,12 @@ window.addEventListener("load", () => {
   }
 });
 
+// ---------------- Queue Button ----------------
+const queueBtn = document.getElementById("queue-btn");
+
+if (queueBtn) {
+  queueBtn.addEventListener("click", () => {
+    clickAnimation(queueBtn);   // animação de clique
+    playAltBlock();             // toca block1 / block2 alternadamente
+  });
+}
