@@ -239,6 +239,7 @@ if (contrastBtn) {
   contrastBtn.addEventListener("click", () => {
     document.body.classList.toggle("light-mode"); 
     clickAnimation(contrastBtn);
+    playAltBlock(); // 🔥 toca alternadamente os sons abrirmenu/fecharmenu
   });
 }
 
@@ -250,6 +251,7 @@ if (settingsToggle) {
       abrirMenuSite();
     }
     clickAnimation(settingsToggle);
+    playAltBlock();
   });
 }
 
@@ -312,6 +314,18 @@ loopBtn.addEventListener("click", () => {
 backBtn.addEventListener("click", () => changeTrack(currentIndex - 1, true));
 skipBtn.addEventListener("click", () => changeTrack(currentIndex + 1, true));
 
+// ---------------- Queue Button ----------------
+const queueBtn = document.getElementById("queue-btn");
+const queuePanel = document.getElementById("queue-panel");
+
+if (queueBtn) {
+  queueBtn.addEventListener("click", () => {
+    clickAnimation(queueBtn);   // animação de clique
+    playAltBlock();             // toca block1 / block2 alternadamente
+    queuePanel.classList.toggle("active"); // desliza o painel
+  });
+}
+
 // ---------------- Inicialização ----------------
 window.addEventListener("load", () => {
   if (som) som.volume = 0.5;
@@ -325,13 +339,3 @@ window.addEventListener("load", () => {
     updateProgress();
   }
 });
-
-// ---------------- Queue Button ----------------
-const queueBtn = document.getElementById("queue-btn");
-
-if (queueBtn) {
-  queueBtn.addEventListener("click", () => {
-    clickAnimation(queueBtn);   // animação de clique
-    playAltBlock();             // toca block1 / block2 alternadamente
-  });
-}
