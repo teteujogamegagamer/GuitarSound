@@ -51,14 +51,13 @@ let isLooping = false;
 
 // Playlist
 const playlist = [
-  "msc/Everlong - Foo Fighters.mp3",
-  "msc/Rooster (2022 Remaster) - Alice in Chains.mp3",
-  "msc/Tear Away - Drowning Pool.mp3", 
-  "msc/Be Quiet and Drive (Far Away) - Deftones.mp3",
-  "msc/Creep (Acoustic) - Radiohead.mp3",
+  { name: "Everlong - Foo Fighters", src: "msc/Everlong - Foo Fighters.mp3" },
+  { name: "Rooster (2022 Remaster) - Alice in Chains", src: "msc/Rooster (2022 Remaster) - Alice in Chains.mp3" },
+  { name: "Tear Away - Drowning Pool", src: "msc/Tear Away - Drowning Pool.mp3" },
+  { name: "Be Quiet and Drive (Far Away) - Deftones", src: "msc/Be Quiet and Drive (Far Away) - Deftones.mp3" },
+  { name: "Creep (Acoustic) - Radiohead", src: "msc/Creep (Acoustic) - Radiohead.mp3" },
 ];
-let currentIndex = playlist.indexOf(som.getAttribute('src'));
-if (currentIndex === -1) currentIndex = 0;
+let currentIndex = 0; // Começa na primeira música da playlist
 
 // ---------------- Funções utilitárias ----------------
 function showIcon(icon) {
@@ -88,12 +87,12 @@ function setVolumeByPosition(clientX) {
   if (!ampBar || !ampSlider) return;
   const rect = ampBar.getBoundingClientRect();
   const sliderWidth = ampSlider.offsetWidth || 20;
-  
+
   let leftPos = clientX - rect.left - sliderWidth / 2;
   leftPos = Math.max(0, Math.min(leftPos, rect.width - sliderWidth));
-  
+
   ampSlider.style.left = `${leftPos}px`;
-  
+
   const percent = rect.width - sliderWidth > 0 ? leftPos / (rect.width - sliderWidth) : 0;
   som.volume = percent;
   if (!som.paused) updateFire(som.volume);
@@ -180,6 +179,7 @@ function togglePlayPause() {
     if (fire) fire.style.opacity = "0";
     stopProgressUpdater();
   }
+  updateQueuePanelCurrentSong(); // Atualiza o estado da música atual na fila
 }
 
 guitarra.addEventListener("click", togglePlayPause);
@@ -191,8 +191,7 @@ som.addEventListener("ended", () => {
     som.play().catch(err => console.log("Erro ao dar loop:", err));
     startProgressUpdater();
   } else {
-    stopProgressUpdater();
-    updateProgress();
+    changeTrack(currentIndex + 1, true); // Toca a próxima música automaticamente
   }
 });
 
@@ -237,9 +236,9 @@ function clickAnimation(el) {
 
 if (contrastBtn) {
   contrastBtn.addEventListener("click", () => {
-    document.body.classList.toggle("light-mode"); 
+    document.body.classList.toggle("light-mode");
     clickAnimation(contrastBtn);
-    playAltBlock(); // 🔥 toca alternadamente os sons abrirmenu/fecharmenu
+    playAltBlock();
   });
 }
 
@@ -272,6 +271,9 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     if (settingsMenu.classList.contains("active")) {
       fecharMenuSite();
+    } else if (queuePanel.classList.contains("active")) { // Fecha a fila também
+      queuePanel.classList.remove("active");
+      playAltBlock();
     } else {
       abrirMenuSite();
     }
@@ -284,7 +286,7 @@ document.querySelectorAll('img').forEach(img => img.ondragstart = () => false);
 // ---------------- Troca de faixa ----------------
 function changeTrack(index, autoPlay = true) {
   currentIndex = ((index % playlist.length) + playlist.length) % playlist.length;
-  som.src = playlist[currentIndex];
+  som.src = playlist[currentIndex].src;
   som.load();
 
   progressFill.style.width = '0%';
@@ -303,6 +305,7 @@ function changeTrack(index, autoPlay = true) {
     startProgressUpdater();
     playAltBlock();
   }
+  updateQueuePanelCurrentSong(); // Atualiza a classe 'current-song'
 }
 
 // ---------------- Botões: loop / back / skip ----------------
@@ -311,18 +314,122 @@ loopBtn.addEventListener("click", () => {
   isLooping = !isLooping;
   loopBtn.classList.toggle("active");
 });
-backBtn.addEventListener("click", () => changeTrack(currentIndex - 1, true));
-skipBtn.addEventListener("click", () => changeTrack(currentIndex + 1, true));
+backBtn.addEventListener("click", () => {
+  playAltBlock();
+  changeTrack(currentIndex - 1, true);
+});
+skipBtn.addEventListener("click", () => {
+  playAltBlock();
+  changeTrack(currentIndex + 1, true);
+});
 
-// ---------------- Queue Button ----------------
+// ---------------- Queue Button e Panel ----------------
 const queueBtn = document.getElementById("queue-btn");
 const queuePanel = document.getElementById("queue-panel");
+const songListEl = document.getElementById("song-list");
+const queueScrollbar = document.getElementById("queue-scrollbar");
+const queueScrollThumb = document.getElementById("queue-scroll-thumb");
+
+let draggingQueueScroll = false;
+
+function populateQueuePanel() {
+  songListEl.innerHTML = ""; // Limpa a lista existente
+  playlist.forEach((song, index) => {
+    const li = document.createElement("li");
+    li.textContent = song.name;
+    li.dataset.index = index; // Armazena o índice da música
+    li.addEventListener("click", () => {
+      if (index !== currentIndex) {
+        changeTrack(index, true); // Toca a música clicada
+      }
+      playAltBlock();
+    });
+    songListEl.appendChild(li);
+  });
+  updateQueuePanelCurrentSong(); // Marca a música atual
+  updateQueueScrollbar(); // Atualiza a scrollbar ao popular
+}
+
+function updateQueuePanelCurrentSong() {
+  const listItems = songListEl.querySelectorAll("li");
+  listItems.forEach((item, index) => {
+    if (index === currentIndex) {
+      item.classList.add("current-song");
+      // Scroll para a música atual, se necessário
+      item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      item.classList.remove("current-song");
+    }
+  });
+  updateQueueScrollbar(); // Atualiza a scrollbar quando a música muda
+}
+
+function updateQueueScrollbar() {
+  if (!songListEl || !queueScrollbar || !queueScrollThumb) return;
+
+  const contentHeight = songListEl.scrollHeight;
+  const viewportHeight = songListEl.clientHeight;
+
+  if (contentHeight > viewportHeight) {
+    queueScrollbar.style.display = 'block'; // Mostra a scrollbar
+    const thumbHeight = Math.max(20, (viewportHeight / contentHeight) * viewportHeight);
+    queueScrollThumb.style.height = `${thumbHeight}px`;
+
+    const thumbPosition = (songListEl.scrollTop / (contentHeight - viewportHeight)) * (viewportHeight - thumbHeight);
+    queueScrollThumb.style.top = `${thumbPosition}px`;
+  } else {
+    queueScrollbar.style.display = 'none'; // Esconde a scrollbar
+  }
+}
+
+// Event listeners para a scrollbar personalizada
+queueScrollThumb.addEventListener('mousedown', (e) => {
+  draggingQueueScroll = true;
+  queueScrollThumb.classList.add('active');
+  const startY = e.clientY;
+  const startTop = queueScrollThumb.offsetTop;
+  const contentHeight = songListEl.scrollHeight;
+  const viewportHeight = songListEl.clientHeight;
+  const scrollbarHeight = queueScrollbar.clientHeight;
+  const thumbHeight = queueScrollThumb.offsetHeight;
+
+  const onMouseMove = (moveEvent) => {
+    if (!draggingQueueScroll) return;
+    const deltaY = moveEvent.clientY - startY;
+    let newTop = startTop + deltaY;
+
+    newTop = Math.max(0, Math.min(newTop, scrollbarHeight - thumbHeight));
+    queueScrollThumb.style.top = `${newTop}px`;
+
+    const scrollRatio = newTop / (scrollbarHeight - thumbHeight);
+    songListEl.scrollTop = scrollRatio * (contentHeight - viewportHeight);
+  };
+
+  const onMouseUp = () => {
+    draggingQueueScroll = false;
+    queueScrollThumb.classList.remove('active');
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  };
+
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+});
+
+// Atualiza o thumb da scrollbar quando a lista é rolada
+songListEl.addEventListener('scroll', updateQueueScrollbar);
+// Atualiza a scrollbar quando o tamanho da janela muda (para responsividade)
+window.addEventListener('resize', updateQueueScrollbar);
+
 
 if (queueBtn) {
   queueBtn.addEventListener("click", () => {
-    clickAnimation(queueBtn);   // animação de clique
-    playAltBlock();             // toca block1 / block2 alternadamente
-    queuePanel.classList.toggle("active"); // desliza o painel
+    clickAnimation(queueBtn);
+    playAltBlock();
+    queuePanel.classList.toggle("active");
+    if (queuePanel.classList.contains("active")) {
+      populateQueuePanel(); // Garante que a lista esteja atualizada
+    }
   });
 }
 
@@ -334,8 +441,15 @@ window.addEventListener("load", () => {
     const sliderWidth = ampSlider.offsetWidth;
     ampSlider.style.left = `${som.volume * (barWidth - sliderWidth)}px`;
   }
-  if (som.readyState >= 1) {
+
+  // Define a primeira música e carrega metadados
+  som.src = playlist[currentIndex].src;
+  som.load();
+
+  som.addEventListener("loadedmetadata", () => {
     totalTimeEl.textContent = formatTime(som.duration);
     updateProgress();
-  }
+  }, { once: true });
+
+  populateQueuePanel(); // Popula o painel da fila na carga inicial
 });
