@@ -35,6 +35,20 @@
       </ul>
     </div>
 
+    <!-- Painel da fila de músicas (agora posicionado no CSS) -->
+    <div id="queue-panel">
+      <h3>Fila de músicas</h3>
+      <div class="queue-list-wrapper">
+        <ul id="song-list">
+          <!-- As músicas serão preenchidas via JavaScript para poder manipular a classe de "música atual" -->
+        </ul>
+        <div id="queue-scrollbar">
+          <div id="queue-scroll-thumb"></div>
+        </div>
+      </div>
+    </div>
+
+
     <!-- Barra de progresso + ícones -->
     <div class="progress-container">
       <div class="controls-left">
@@ -83,18 +97,6 @@
       <div id="play-icon"><img src="img/play.png" alt=""></div>
       <div id="pause-icon"><img src="img/pause.png" alt=""></div>
     </div>
-  </div>
-
-  <!-- Painel da fila de músicas -->
-  <div id="queue-panel">
-    <h3>Fila de músicas</h3>
-    <ul>
-      <li>Everlong - Foo Fighters</li>
-      <li>Rooster - Alice in Chains</li>
-      <li>Tear Away - Drowning Pool</li>
-      <li>Be Quiet and Drive - Deftones</li>
-      <li>Creep - Radiohead</li>
-    </ul>
   </div>
 
   <audio id="som" src="msc/Everlong - Foo Fighters.mp3"></audio>
