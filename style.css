@@ -57,6 +57,8 @@ body {
   opacity: 0;
   transition: opacity 0.6s ease-in;
   z-index: 1;
+  /* Adicionado sombra preta desfocada */
+  filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.7));
 }
 
 #play-icon,
@@ -326,7 +328,7 @@ body.light-mode #settings-toggle {
   max-width: 600px; /* Adicionado max-width para o menu */
   height: 80%;
   max-height: 500px; /* Adicionado max-height para o menu */
-  background: rgba(150, 150, 150, 0.95);
+  background: rgba(75, 73, 73, 0.95);
   border-radius: 12px;
   box-shadow: 0 0 30px rgba(0,0,0,0.7);
   z-index: 9998;
@@ -337,6 +339,13 @@ body.light-mode #settings-toggle {
   padding: 20px;
   font-family: "Tiny5", sans-serif;
   color: white;
+}
+
+/* Cor do menu adaptada ao tema */
+body.light-mode #settings-menu {
+  background: rgba(230, 230, 230, 0.95);
+  color: black;
+  box-shadow: 0 0 30px rgba(0,0,0,0.4);
 }
 
 #settings-menu.active {
@@ -412,8 +421,9 @@ body.light-mode #queue-btn {
   top: 50%; /* Centraliza verticalmente */
   left: 50%; /* Centraliza horizontalmente (temporariamente para cálculo) */
   /* Ajustado para mover mais para a esquerda, usando -20vw e -150px (anterior era -15vw e -120px) */
-  transform: translate(calc(-50% - 20vw - 150px), -50%);
-  width: 250px; /* Largura fixa */
+  /* Ajustado para ser um pouco mais largo */
+  transform: translate(calc(-50% - 22vw - 180px), -50%); /* Ajustado o left e o translate */
+  width: 300px; /* Largura AUMENTADA para caber nomes completos */
   height: 400px; /* Altura fixa */
   background: rgba(20, 20, 20, 0.97); /* Fundo escuro */
   border-radius: 15px; /* Bordas arredondadas */
@@ -433,7 +443,7 @@ body.light-mode #queue-btn {
   opacity: 1; /* Torna visível */
   pointer-events: auto; /* Habilita interações */
   /* Garante que a posição permaneça a mesma quando ativo */
-  transform: translate(calc(-50% - 20vw - 150px), -50%);
+  transform: translate(calc(-50% - 22vw - 180px), -50%); /* Mantém a nova posição */
 }
 
 /* Ajustes para o light mode */
@@ -485,9 +495,10 @@ body.light-mode #queue-panel ul li {
   padding: 12px 15px; /* AUMENTADO o padding para mais espaço vertical */
   border-bottom: 1px solid rgba(255,255,255,0.1); /* Borda mais suave */
   font-size: 1.1rem; /* Tamanho da fonte ajustado */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* Removido overflow: hidden, text-overflow: ellipsis, white-space: nowrap para permitir texto completo */
+  white-space: normal; /* Permite quebra de linha */
+  overflow: visible; /* Garante que o texto seja visível */
+  text-overflow: clip; /* Não corta o texto */
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
   border-radius: 5px; /* Pequenas bordas arredondadas nos itens */
@@ -583,7 +594,7 @@ body.light-mode #queue-scroll-thumb {
   #queue-btn { width: 5vw; max-width: 35px; }
 
   #queue-panel {
-    width: 200px; /* Menor largura em telas menores */
+    width: 250px; /* Largura ajustada para telas menores, ainda maior que antes */
     height: 350px; /* Menor altura */
     /* Ajuste de posição para telas menores */
     transform: translate(calc(-50% - 25vw - 120px), -50%);
@@ -649,7 +660,7 @@ body.light-mode #queue-scroll-thumb {
     top: 50%;
     left: 2vw; /* Ajusta para uma margem da tela */
     transform: translateY(-50%); /* Centraliza verticalmente */
-    width: 220px; /* Largura ainda menor */
+    width: 200px; /* Largura ainda menor */
     height: 300px; /* Altura ainda menor */
     box-shadow: 4px 0 20px rgba(0,0,0,0.5); /* Sombra mais suave */
     transition: transform 0.4s ease-out, opacity 0.4s ease-out;
@@ -688,7 +699,7 @@ body.light-mode #queue-scroll-thumb {
   #close-menu { width: 35px; }
 
   #queue-panel {
-    width: 180px; /* Largura ainda menor */
+    width: 160px; /* Largura ainda menor */
     height: 250px; /* Altura ainda menor */
     left: 1vw; /* Ajusta mais para a esquerda */
   }
