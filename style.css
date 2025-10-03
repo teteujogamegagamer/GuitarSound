@@ -8,6 +8,7 @@ body {
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
   color: white;
+  font-family: "Tiny5", sans-serif; /* Adicionado fonte padrão para o body */
 }
 
 .container {
@@ -15,6 +16,7 @@ body {
   align-items: center;
   position: relative;
   flex-wrap: wrap;
+  justify-content: center; /* Centraliza o conteúdo principal */
 }
 
 .amp-container {
@@ -291,7 +293,9 @@ body.light-mode {
 body.light-mode #current-time,
 body.light-mode #total-time,
 body.light-mode #amp-label,
-body.light-mode #settings-menu {
+body.light-mode #settings-menu,
+body.light-mode #queue-panel h3,
+body.light-mode #queue-panel ul li {
   color: black;
 }
 
@@ -319,7 +323,9 @@ body.light-mode #settings-toggle {
   left: 50%;
   transform: translate(-50%, -50%) scale(0.95);
   width: 80%;
+  max-width: 600px; /* Adicionado max-width para o menu */
   height: 80%;
+  max-height: 500px; /* Adicionado max-height para o menu */
   background: rgba(150, 150, 150, 0.95);
   border-radius: 12px;
   box-shadow: 0 0 30px rgba(0,0,0,0.7);
@@ -400,43 +406,293 @@ body.light-mode #queue-btn {
   filter: invert(0) drop-shadow(0 2px 6px rgba(0,0,0,0.6));
 }
 
-/* Painel da fila de músicas lateral */
+/* NOVO ESTILO para o Painel da Fila de Músicas */
 #queue-panel {
-  position: fixed;
-  top: 0;
-  left: -320px; /* começa fora da tela */
-  width: 300px;
-  height: 100%;
-  background: rgba(20, 20, 20, 0.97);
-  border-radius: 0 15px 15px 0;
+  position: fixed; /* Posição fixa na tela */
+  top: 50%; /* Centraliza verticalmente */
+  left: 50%; /* Centraliza horizontalmente (temporariamente para cálculo) */
+  /* Ajustado para mover mais para a esquerda, usando -20vw e -150px (anterior era -15vw e -120px) */
+  transform: translate(calc(-50% - 20vw - 150px), -50%);
+  width: 250px; /* Largura fixa */
+  height: 400px; /* Altura fixa */
+  background: rgba(20, 20, 20, 0.97); /* Fundo escuro */
+  border-radius: 15px; /* Bordas arredondadas */
   box-shadow: 4px 0 20px rgba(0,0,0,0.7);
   z-index: 15000;
-  transition: left 0.4s ease;
+  transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+  opacity: 0; /* Esconde o painel por padrão */
+  pointer-events: none; /* Desabilita interações quando escondido */
   padding: 20px;
-  font-family: "Tiny5", sans-serif;
-  overflow-y: auto;
-  color: white;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Estado ativo → aparece */
+/* Estado ativo: painel visível */
 #queue-panel.active {
-  left: 0; /* desliza para dentro da tela */
+  opacity: 1; /* Torna visível */
+  pointer-events: auto; /* Habilita interações */
+  /* Garante que a posição permaneça a mesma quando ativo */
+  transform: translate(calc(-50% - 20vw - 150px), -50%);
 }
 
+/* Ajustes para o light mode */
+body.light-mode #queue-panel {
+  background: rgba(230, 230, 230, 0.97);
+  color: black;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.4);
+}
+
+body.light-mode #queue-panel ul li {
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Título do painel */
 #queue-panel h3 {
   margin-top: 0;
   font-size: 1.5rem;
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 20px; /* Mais espaço abaixo do título */
+  color: inherit; /* Garante que a cor se adapte ao modo claro/escuro */
 }
 
+/* Wrapper para a lista e a scrollbar personalizada */
+.queue-list-wrapper {
+  flex-grow: 1; /* Permite que o wrapper preencha o espaço restante */
+  position: relative;
+  overflow: hidden; /* Esconde o overflow para nossa scrollbar personalizada */
+}
+
+/* Lista de músicas */
 #queue-panel ul {
   list-style: none;
-  padding: 0;
+  padding: 0 10px 0 0; /* Ajusta padding para acomodar a scrollbar */
   margin: 0;
+  max-height: 100%; /* Permite que a lista tenha scroll */
+  overflow-y: scroll; /* Ativa o scroll vertical */
+  scrollbar-width: none; /* Esconde a scrollbar padrão (Firefox) */
+  -ms-overflow-style: none; /* Esconde a scrollbar padrão (IE/Edge) */
+  user-select: none;
 }
 
-#queue-panel li {
-  padding: 5px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
+/* Esconde a scrollbar padrão (WebKit/Chrome/Safari) */
+#queue-panel ul::-webkit-scrollbar {
+  display: none;
+}
+
+/* Itens da lista */
+#queue-panel ul li {
+  padding: 12px 15px; /* AUMENTADO o padding para mais espaço vertical */
+  border-bottom: 1px solid rgba(255,255,255,0.1); /* Borda mais suave */
+  font-size: 1.1rem; /* Tamanho da fonte ajustado */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  border-radius: 5px; /* Pequenas bordas arredondadas nos itens */
+  margin-bottom: 8px; /* AUMENTADO o espaçamento entre os itens */
+}
+
+#queue-panel ul li:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+#queue-panel ul li:hover {
+  background-color: rgba(255, 255, 255, 0.08); /* Efeito hover no item */
+}
+
+body.light-mode #queue-panel ul li:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Estilo para a música que está tocando */
+#queue-panel ul li.current-song {
+  color: lime;
+  font-weight: bold;
+  background-color: rgba(0, 255, 0, 0.1); /* Fundo suave para a música atual */
+}
+
+body.light-mode #queue-panel ul li.current-song {
+  background-color: rgba(0, 255, 0, 0.15);
+}
+
+/* Scrollbar personalizada */
+#queue-scrollbar {
+  position: absolute;
+  right: 0px; /* Alinha à direita do wrapper */
+  top: 0;
+  width: 8px; /* Largura da scrollbar */
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3); /* Fundo da barra */
+  border-radius: 4px;
+  user-select: none;
+  display: none; /* Escondido por padrão, JavaScript mostrará */
+}
+
+body.light-mode #queue-scrollbar {
+  background-color: rgba(150, 150, 150, 0.3);
+}
+
+#queue-scroll-thumb {
+  position: absolute;
+  width: 100%;
+  height: 40px; /* Altura inicial do "polegar" */
+  background-color: rgba(255, 255, 255, 0.6); /* Cor do "polegar" */
+  border-radius: 4px;
+  cursor: grab;
+  transition: background-color 0.2s ease;
+}
+
+#queue-scroll-thumb:active {
+  cursor: grabbing;
+}
+
+body.light-mode #queue-scroll-thumb {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* Media Queries para responsividade */
+@media (max-width: 900px) {
+  .progress-container {
+    bottom: 5vh; /* Ajuste para evitar sobreposição em telas menores */
+    width: 80%;
+  }
+
+  .controls-left { left: 0; transform: translateY(-50%) translateX(-100%); gap: 0.5vw; }
+  .controls-right { right: 0; transform: translateY(-50%) translateX(100%); gap: 0.5vw; }
+
+  .controls-left img,
+  .controls-right img { width: 4vw; max-width: 35px; }
+
+  #guitarra { width: 30vw; max-width: 200px; }
+  #amp { width: 20vw; max-width: 150px; }
+  #fire { width: 35vw; max-width: 250px; top: 60%; left: 50%; } /* Fogo atrás da guitarra */
+
+  #amp-label { font-size: 2vw; margin-right: 1.5vw; }
+  #amp-bar { width: 15vw; max-width: 100px; }
+  #amp-slider { width: 2.5vw; max-width: 18px; height: 2.5vw; max-height: 18px; }
+
+  #current-time, #total-time { font-size: 1.5vw; min-width: 30px; }
+
+  #contrast-toggle, #settings-toggle { width: 5vw; max-width: 35px; }
+  #settings-toggle { right: calc(2vw + 6vw + 10px); }
+
+  #close-menu { width: 40px; }
+  #queue-btn { width: 5vw; max-width: 35px; }
+
+  #queue-panel {
+    width: 200px; /* Menor largura em telas menores */
+    height: 350px; /* Menor altura */
+    /* Ajuste de posição para telas menores */
+    transform: translate(calc(-50% - 25vw - 120px), -50%);
+  }
+
+  #queue-panel.active {
+    transform: translate(calc(-50% - 25vw - 120px), -50%);
+  }
+
+  #queue-panel h3 { font-size: 1.3rem; margin-bottom: 15px; }
+  #queue-panel ul li { font-size: 1rem; padding: 10px 10px; margin-bottom: 6px; }
+}
+
+@media (max-width: 768px) {
+  .container { flex-direction: column; }
+  .amp-container { margin-right: 0; margin-bottom: 2vh; }
+
+  #guitarra { width: 40vw; max-width: 220px; }
+  #amp { width: 25vw; max-width: 180px; }
+  #fire { width: 50vw; max-width: 300px; top: 60%; left: 50%; } /* Fogo atrás da guitarra */
+
+  .progress-container {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    margin-top: 3vh;
+    width: 90%;
+    flex-direction: column;
+    gap: 1vh;
+  }
+
+  .progress-center { width: 100%; margin: 0; }
+  #progress-bar { width: 100%; max-width: none; margin: 0 10px; }
+
+  .controls-left, .controls-right {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    transform: none;
+    width: 100%;
+    justify-content: center;
+    gap: 2vw;
+    margin-top: 10px;
+  }
+
+  .controls-left img, .controls-right img, #queue-btn {
+    width: 6vw;
+    max-width: 40px;
+  }
+  #contrast-toggle, #settings-toggle { width: 6vw; max-width: 40px; }
+  #settings-toggle { right: calc(2vw + 7vw + 10px); } /* Ajuste */
+
+  #amp-label { font-size: 3vw; }
+  #amp-bar { width: 20vw; max-width: 120px; }
+  #amp-slider { width: 3.5vw; max-width: 25px; height: 3.5vw; max-height: 25px; }
+
+  #current-time, #total-time { font-size: 2vw; min-width: 35px; }
+
+  #queue-panel {
+    position: fixed; /* Manter fixo */
+    top: 50%;
+    left: 2vw; /* Ajusta para uma margem da tela */
+    transform: translateY(-50%); /* Centraliza verticalmente */
+    width: 220px; /* Largura ainda menor */
+    height: 300px; /* Altura ainda menor */
+    box-shadow: 4px 0 20px rgba(0,0,0,0.5); /* Sombra mais suave */
+    transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+  }
+
+  #queue-panel.active {
+    transform: translateY(-50%) translateX(0); /* Desliza para visível */
+  }
+
+  #queue-panel h3 { font-size: 1.2rem; margin-bottom: 10px; }
+  #queue-panel ul li { font-size: 0.9rem; padding: 8px 8px; margin-bottom: 5px; }
+}
+
+@media (max-width: 480px) {
+  #guitarra { width: 50vw; max-width: 180px; }
+  #amp { width: 35vw; max-width: 150px; }
+
+  .controls-left img, .controls-right img, #queue-btn { width: 8vw; max-width: 45px; }
+
+  #contrast-toggle, #settings-toggle { width: 8vw; max-width: 45px; }
+  #settings-toggle { right: calc(2vw + 9vw + 10px); }
+
+  #amp-label { font-size: 4vw; }
+  #amp-bar { width: 30vw; max-width: 150px; }
+  #amp-slider { width: 5vw; max-width: 30px; height: 5vw; max-height: 30px; }
+
+  #current-time, #total-time { font-size: 2.5vw; min-width: 40px; }
+
+  #settings-menu {
+    width: 90%;
+    height: 90%;
+    max-width: none;
+    max-height: none;
+  }
+
+  #close-menu { width: 35px; }
+
+  #queue-panel {
+    width: 180px; /* Largura ainda menor */
+    height: 250px; /* Altura ainda menor */
+    left: 1vw; /* Ajusta mais para a esquerda */
+  }
+
+  #queue-panel h3 { font-size: 1.1rem; margin-bottom: 8px; }
+  #queue-panel ul li { font-size: 0.85rem; padding: 7px 7px; margin-bottom: 4px; }
 }
