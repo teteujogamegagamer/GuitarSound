@@ -63,14 +63,22 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(1);
-  font-size: clamp(48px, 8vw, 96px);
-  color: rgba(0,0,0,0.9);
+  width: 50%;
+  max-width: 60px;
+  height: auto;
   opacity: 0;
   transition: opacity 0.4s ease-out, transform 0.1s ease-out;
   pointer-events: none;
   z-index: 9999;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
   user-select: none;
+}
+
+#play-icon img,
+#pause-icon img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 #amp {
@@ -273,7 +281,6 @@ body.light-mode #loop-btn.active {
 }
 
 #contrast-toggle { right: 2vw; }
-/* corrigido: engrenagem fixa junto com contraste */
 #settings-toggle { right: calc(2vw + 4vw + 10px); }
 
 body.light-mode {
@@ -391,4 +398,45 @@ body.light-mode #settings-toggle {
 
 body.light-mode #queue-btn {
   filter: invert(0) drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+}
+
+/* Painel da fila de músicas lateral */
+#queue-panel {
+  position: fixed;
+  top: 0;
+  left: -320px; /* começa fora da tela */
+  width: 300px;
+  height: 100%;
+  background: rgba(20, 20, 20, 0.97);
+  border-radius: 0 15px 15px 0;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.7);
+  z-index: 15000;
+  transition: left 0.4s ease;
+  padding: 20px;
+  font-family: "Tiny5", sans-serif;
+  overflow-y: auto;
+  color: white;
+}
+
+/* Estado ativo → aparece */
+#queue-panel.active {
+  left: 0; /* desliza para dentro da tela */
+}
+
+#queue-panel h3 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#queue-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#queue-panel li {
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
 }
