@@ -49,13 +49,38 @@ function playAltBlock() {
 // loop
 let isLooping = false;
 
-// Playlist
+// Playlist atualizada com informações completas
 const playlist = [
-  { name: "Everlong - Foo Fighters", src: "msc/Everlong - Foo Fighters.mp3" },
-  { name: "Rooster (2022 Remaster) - Alice in Chains", src: "msc/Rooster (2022 Remaster) - Alice in Chains.mp3" },
-  { name: "Tear Away - Drowning Pool", src: "msc/Tear Away - Drowning Pool.mp3" },
-  { name: "Be Quiet and Drive (Far Away) - Deftones", src: "msc/Be Quiet and Drive (Far Away) - Deftones.mp3" },
-  { name: "Creep (Acoustic) - Radiohead", src: "msc/Creep (Acoustic) - Radiohead.mp3" },
+  { 
+    name: "Everlong", 
+    artist: "Foo Fighters", 
+    src: "msc/Everlong - Foo Fighters.mp3",
+    image: "img/capa de everlong.jpg"
+  },
+  { 
+    name: "Rooster (2022 Remaster)", 
+    artist: "Alice in Chains", 
+    src: "msc/Rooster (2022 Remaster) - Alice in Chains.mp3",
+    image: "img/capa de rooster.jpeg"
+  },
+  { 
+    name: "Tear Away", 
+    artist: "Drowning Pool", 
+    src: "msc/Tear Away - Drowning Pool.mp3",
+    image: "img/capa de tear away.jpeg"
+  },
+  { 
+    name: "Be Quiet and Drive (Far Away)", 
+    artist: "Deftones", 
+    src: "msc/Be Quiet and Drive (Far Away) - Deftones.mp3",
+    image: "img/capa de be quiet and drive.jpeg"
+  },
+  { 
+    name: "Creep (Acoustic)", 
+    artist: "Radiohead", 
+    src: "msc/Creep (Acoustic) - Radiohead.mp3",
+    image: "img/capa de creep acoustic.jpeg"
+  },
 ];
 let currentIndex = 0; // Começa na primeira música da playlist
 
@@ -197,6 +222,30 @@ som.addEventListener("ended", () => {
 
 // ---------------- Atalhos teclado ----------------
 document.addEventListener("keydown", (e) => {
+  // Barra de espaço - Play/Pause
+  if (e.code === "Space") {
+    e.preventDefault(); // Previne scroll da página
+    togglePlayPause();
+  }
+  
+  // R - Reiniciar música do início
+  if (e.code === "KeyR") {
+    e.preventDefault();
+    som.currentTime = 0;
+    updateProgress();
+    if (!som.paused) updateFire(som.volume);
+    else if (fire) fire.style.opacity = "0";
+  }
+  
+  // L - Ativar/desativar loop
+  if (e.code === "KeyL") {
+    e.preventDefault();
+    isLooping = !isLooping;
+    loopBtn.classList.toggle("active");
+    playAltBlock();
+  }
+  
+  // Atalhos originais mantidos
   if (e.code === "Digit0" || e.code === "Insert") {
     som.currentTime = 0;
     updateProgress();
@@ -435,11 +484,21 @@ const queueScrollThumb = document.getElementById("queue-scroll-thumb");
 
 let draggingQueueScroll = false;
 
+// NOVA FUNÇÃO: Popula o painel da fila com o novo layout
 function populateQueuePanel() {
   songListEl.innerHTML = ""; // Limpa a lista existente
   playlist.forEach((song, index) => {
     const li = document.createElement("li");
-    li.textContent = song.name;
+    
+    // Cria a estrutura do item da música
+    li.innerHTML = `
+      <img src="${song.image}" alt="${song.name}" class="song-image" onerror="this.src='img/capa de everlong.jpg'">
+      <div class="song-info">
+        <div class="song-title">${song.name}</div>
+        <div class="song-artist">${song.artist}</div>
+      </div>
+    `;
+    
     li.dataset.index = index; // Armazena o índice da música
     li.addEventListener("click", () => {
       if (index !== currentIndex) {
