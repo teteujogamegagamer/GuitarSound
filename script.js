@@ -213,19 +213,82 @@ const settingsMenu = document.getElementById("settings-menu");
 const settingsOverlay = document.getElementById("settings-overlay");
 const closeMenuBtn = document.getElementById("close-menu");
 
+// Elementos do novo menu
+const mainMenu = document.getElementById("main-menu");
+const shortcutsBtn = document.getElementById("shortcuts-btn");
+const creditsBtn = document.getElementById("credits-btn");
+const shortcutsMenu = document.getElementById("shortcuts-menu");
+const creditsMenu = document.getElementById("credits-menu");
+const backShortcutsBtn = document.getElementById("back-shortcuts");
+const backCreditsBtn = document.getElementById("back-credits");
+
 const abrirMenu = document.getElementById("abrirMenu");
 const fecharMenu = document.getElementById("fecharMenu");
+
+// Estado do menu
+let currentMenu = 'main'; // 'main', 'shortcuts', 'credits'
+let menuToggle = true; // Para alternar entre abrir/fechar menu
+
+function playMenuSound() {
+  if (menuToggle) {
+    if (abrirMenu) { 
+      abrirMenu.currentTime = 0; 
+      abrirMenu.play().catch(()=>{}); 
+    }
+  } else {
+    if (fecharMenu) { 
+      fecharMenu.currentTime = 0; 
+      fecharMenu.play().catch(()=>{}); 
+    }
+  }
+  menuToggle = !menuToggle;
+}
 
 function abrirMenuSite() {
   settingsMenu.classList.add("active");
   settingsOverlay.classList.add("active");
-  if (abrirMenu) { abrirMenu.currentTime = 0; abrirMenu.play().catch(()=>{}); }
+  showMainMenu();
+  playMenuSound();
+  // Fecha a fila de músicas se estiver aberta
+  if (queuePanel.classList.contains("active")) {
+    queuePanel.classList.remove("active");
+  }
 }
 
 function fecharMenuSite() {
   settingsMenu.classList.remove("active");
   settingsOverlay.classList.remove("active");
-  if (fecharMenu) { fecharMenu.currentTime = 0; fecharMenu.play().catch(()=>{}); }
+  hideAllSubmenus();
+  currentMenu = 'main';
+  playMenuSound();
+}
+
+function showMainMenu() {
+  mainMenu.style.display = 'flex';
+  shortcutsMenu.classList.remove("active");
+  creditsMenu.classList.remove("active");
+  currentMenu = 'main';
+}
+
+function showShortcutsMenu() {
+  mainMenu.style.display = 'none';
+  shortcutsMenu.classList.add("active");
+  creditsMenu.classList.remove("active");
+  currentMenu = 'shortcuts';
+}
+
+function showCreditsMenu() {
+  mainMenu.style.display = 'none';
+  shortcutsMenu.classList.remove("active");
+  creditsMenu.classList.add("active");
+  currentMenu = 'credits';
+}
+
+function hideAllSubmenus() {
+  mainMenu.style.display = 'flex';
+  shortcutsMenu.classList.remove("active");
+  creditsMenu.classList.remove("active");
+  currentMenu = 'main';
 }
 
 function clickAnimation(el) {
@@ -250,7 +313,7 @@ if (settingsToggle) {
       abrirMenuSite();
     }
     clickAnimation(settingsToggle);
-    playAltBlock();
+    // Não chama playAltBlock() aqui - apenas o som do menu será tocado
   });
 }
 
@@ -267,11 +330,51 @@ if (settingsOverlay) {
   });
 }
 
+// Event listeners para os botões do menu
+if (shortcutsBtn) {
+  shortcutsBtn.addEventListener("click", () => {
+    clickAnimation(shortcutsBtn);
+    playAltBlock();
+    showShortcutsMenu();
+  });
+}
+
+if (creditsBtn) {
+  creditsBtn.addEventListener("click", () => {
+    clickAnimation(creditsBtn);
+    playAltBlock();
+    showCreditsMenu();
+  });
+}
+
+if (backShortcutsBtn) {
+  backShortcutsBtn.addEventListener("click", () => {
+    clickAnimation(backShortcutsBtn);
+    playAltBlock();
+    showMainMenu();
+  });
+}
+
+if (backCreditsBtn) {
+  backCreditsBtn.addEventListener("click", () => {
+    clickAnimation(backCreditsBtn);
+    playAltBlock();
+    showMainMenu();
+  });
+}
+
+// Navegação com ESC
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     if (settingsMenu.classList.contains("active")) {
-      fecharMenuSite();
-    } else if (queuePanel.classList.contains("active")) { // Fecha a fila também
+      if (currentMenu === 'main') {
+        fecharMenuSite();
+      } else {
+        // Se está em um submenu, volta para o menu principal
+        showMainMenu();
+        playAltBlock();
+      }
+    } else if (queuePanel.classList.contains("active")) {
       queuePanel.classList.remove("active");
       playAltBlock();
     } else {
@@ -420,7 +523,6 @@ queueScrollThumb.addEventListener('mousedown', (e) => {
 songListEl.addEventListener('scroll', updateQueueScrollbar);
 // Atualiza a scrollbar quando o tamanho da janela muda (para responsividade)
 window.addEventListener('resize', updateQueueScrollbar);
-
 
 if (queueBtn) {
   queueBtn.addEventListener("click", () => {
