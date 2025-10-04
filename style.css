@@ -9,6 +9,8 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
   color: white;
   font-family: "Tiny5", sans-serif; /* Adicionado fonte padrão para o body */
+  /* Previne problemas de zoom */
+  transform-origin: 0 0;
 }
 
 .container {
@@ -17,6 +19,8 @@ body {
   position: relative;
   flex-wrap: wrap;
   justify-content: center; /* Centraliza o conteúdo principal */
+  /* Previne problemas de zoom */
+  transform-origin: center center;
 }
 
 .amp-container {
@@ -30,6 +34,7 @@ body {
 #guitarra {
   width: 20vw;
   max-width: 250px;
+  min-width: 150px;
   cursor: pointer;
   transition: transform 0.1s ease;
   filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
@@ -53,6 +58,7 @@ body {
   transform: translate(-50%, -50%);
   width: 25vw;
   max-width: 300px;
+  min-width: 180px;
   height: auto;
   opacity: 0;
   transition: opacity 0.6s ease-in;
@@ -69,6 +75,7 @@ body {
   transform: translate(-50%, -50%) scale(1);
   width: 50%;
   max-width: 60px;
+  min-width: 40px;
   height: auto;
   opacity: 0;
   transition: opacity 0.4s ease-out, transform 0.1s ease-out;
@@ -88,6 +95,7 @@ body {
 #amp {
   width: 15vw;
   max-width: 180px;
+  min-width: 120px;
   height: auto;
   cursor: pointer;
   transition: transform 0.1s ease;
@@ -111,6 +119,7 @@ body {
   transition: opacity 0.3s ease-out;
   width: 10vw;
   max-width: 120px;
+  min-width: 80px;
   height: auto;
 }
 
@@ -123,7 +132,7 @@ body {
 
 #amp-label {
   font-family: "Tiny5", sans-serif;
-  font-size: 1.2vw;
+  font-size: clamp(12px, 1.2vw, 16px);
   color: white;
   margin-right: 1vw;
   user-select: none;
@@ -133,7 +142,9 @@ body {
   position: relative;
   width: 10vw;
   max-width: 120px;
+  min-width: 80px;
   height: 1vh;
+  min-height: 8px;
   background-color: black;
   border-radius: 5px;
   cursor: pointer;
@@ -144,8 +155,10 @@ body {
 #amp-slider {
   width: 1.5vw;
   max-width: 20px;
+  min-width: 15px;
   height: 1.5vw;
   max-height: 20px;
+  min-height: 15px;
   background-color: rgb(255, 255, 255);
   border-radius: 50%;
   position: absolute;
@@ -181,7 +194,7 @@ body {
 
 #current-time,
 #total-time {
-  font-size: 1vw;
+  font-size: clamp(12px, 1vw, 14px);
   min-width: 40px;
   text-align: center;
   color: white;
@@ -190,6 +203,7 @@ body {
 #progress-bar {
   flex: 1;
   height: 0.8vh;
+  min-height: 6px;
   background-color: rgba(255,255,255,0.3);
   margin: 0 1vw;
   border-radius: 3px;
@@ -211,8 +225,10 @@ body {
 #progress-thumb {
   width: 1.2vw;
   max-width: 16px;
+  min-width: 12px;
   height: 1.2vw;
   max-height: 16px;
+  min-height: 12px;
   background-color: white;
   border-radius: 50%;
   position: absolute;
@@ -247,6 +263,7 @@ body {
 .controls-right img {
   width: 2vw;
   max-width: 28px;
+  min-width: 20px;
   height: auto;
   cursor: pointer;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
@@ -276,6 +293,7 @@ body.light-mode #loop-btn.active {
   top: 2vh;
   width: 3vw;
   max-width: 40px;
+  min-width: 25px;
   height: auto;
   cursor: pointer;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
@@ -394,7 +412,7 @@ body.light-mode #settings-menu {
 #settings-menu h2 {
   text-align: center;
   margin: 20px 0 0 0;
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 2vw, 2rem);
   width: 100%;
 }
 
@@ -415,7 +433,7 @@ body.light-mode #settings-menu {
   cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid transparent;
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 1.2vw, 1.2rem);
 }
 
 .menu-item:hover {
@@ -467,7 +485,7 @@ body.light-mode .menu-item:hover {
 
 .submenu-header h3 {
   margin: 0 auto;
-  font-size: 1.5rem;
+  font-size: clamp(1.3rem, 1.5vw, 1.5rem);
 }
 
 .back-btn {
@@ -501,7 +519,7 @@ body.light-mode .back-btn {
 .submenu-content li {
   padding: 12px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 1.1vw, 1.1rem);
 }
 
 .submenu-content li:last-child {
@@ -542,19 +560,20 @@ body.light-mode .submenu-content li {
 
 .creator-details h4 {
   margin: 0 0 10px 0;
-  font-size: 1.4rem;
+  font-size: clamp(1.2rem, 1.4vw, 1.4rem);
   color: lime;
 }
 
 .creator-details p {
   margin: 0;
   line-height: 1.5;
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1vw, 1rem);
 }
 
 #queue-btn {
   width: 3vw;
   max-width: 40px;
+  min-width: 25px;
   height: auto;
   cursor: pointer;
   filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
@@ -574,14 +593,14 @@ body.light-mode #queue-btn {
   filter: invert(0) drop-shadow(0 2px 6px rgba(0,0,0,0.6));
 }
 
-/* NOVO ESTILO para o Painel da Fila de Músicas */
+/* NOVO ESTILO para o Painel da Fila de Músicas - Layout Spotify */
 #queue-panel {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(calc(-50% - 22vw - 180px), -50%);
-  width: 300px;
-  height: 400px;
+  width: 350px;
+  height: 450px;
   background: rgba(20, 20, 20, 0.97);
   border-radius: 15px;
   box-shadow: 4px 0 20px rgba(0,0,0,0.7);
@@ -607,16 +626,14 @@ body.light-mode #queue-panel {
   box-shadow: 4px 0 20px rgba(0,0,0,0.4);
 }
 
-body.light-mode #queue-panel ul li {
-  border-bottom: 1px solid rgba(0,0,0,0.1);
-}
-
 #queue-panel h3 {
   margin-top: 0;
-  font-size: 1.5rem;
+  font-size: clamp(1.3rem, 1.5vw, 1.5rem);
   text-align: center;
   margin-bottom: 20px;
   color: inherit;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 10px;
 }
 
 .queue-list-wrapper {
@@ -640,17 +657,22 @@ body.light-mode #queue-panel ul li {
   display: none;
 }
 
+/* NOVO ESTILO PARA OS ITENS DA LISTA - LAYOUT SPOTIFY */
 #queue-panel ul li {
-  padding: 12px 15px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  font-size: 1.1rem;
+  padding: 15px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: clamp(0.9rem, 1.1vw, 1.1rem);
   white-space: normal;
   overflow: visible;
   text-overflow: clip;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  border-radius: 5px;
+  transition: all 0.3s ease;
+  border-radius: 8px;
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
 }
 
 #queue-panel ul li:last-child {
@@ -660,20 +682,76 @@ body.light-mode #queue-panel ul li {
 
 #queue-panel ul li:hover {
   background-color: rgba(255, 255, 255, 0.08);
+  transform: translateX(5px);
 }
 
 body.light-mode #queue-panel ul li:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-#queue-panel ul li.current-song {
-  color: lime;
+/* Imagem da música */
+.song-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+/* Informações da música */
+.song-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.song-title {
   font-weight: bold;
-  background-color: rgba(0, 255, 0, 0.1);
+  font-size: clamp(0.9rem, 1.1vw, 1.1rem);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-artist {
+  font-size: clamp(0.75rem, 0.9vw, 0.9rem);
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.light-mode .song-artist {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+#queue-panel ul li.current-song {
+  background-color: rgba(0, 255, 0, 0.15);
+  border-left: 3px solid lime;
+}
+
+#queue-panel ul li.current-song .song-title {
+  color: lime;
+}
+
+#queue-panel ul li.current-song .song-artist {
+  color: rgba(0, 255, 0, 0.8);
 }
 
 body.light-mode #queue-panel ul li.current-song {
-  background-color: rgba(0, 255, 0, 0.15);
+  background-color: rgba(0, 255, 0, 0.1);
+}
+
+body.light-mode #queue-panel ul li.current-song .song-title {
+  color: #00a800;
+}
+
+body.light-mode #queue-panel ul li.current-song .song-artist {
+  color: rgba(0, 168, 0, 0.8);
 }
 
 #queue-scrollbar {
@@ -740,8 +818,8 @@ body.light-mode #queue-scroll-thumb {
   #queue-btn { width: 5vw; max-width: 35px; }
 
   #queue-panel {
-    width: 250px;
-    height: 350px;
+    width: 300px;
+    height: 400px;
     transform: translate(calc(-50% - 25vw - 120px), -50%);
   }
 
@@ -750,7 +828,15 @@ body.light-mode #queue-scroll-thumb {
   }
 
   #queue-panel h3 { font-size: 1.3rem; margin-bottom: 15px; }
-  #queue-panel ul li { font-size: 1rem; padding: 10px 10px; margin-bottom: 6px; }
+  #queue-panel ul li { 
+    padding: 12px 10px; 
+    margin-bottom: 6px; 
+    min-height: 55px;
+  }
+  .song-image {
+    width: 45px;
+    height: 45px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -805,8 +891,8 @@ body.light-mode #queue-scroll-thumb {
     top: 50%;
     left: 2vw;
     transform: translateY(-50%);
-    width: 200px;
-    height: 300px;
+    width: 280px;
+    height: 380px;
     box-shadow: 4px 0 20px rgba(0,0,0,0.5);
     transition: transform 0.4s ease-out, opacity 0.4s ease-out;
   }
@@ -816,7 +902,22 @@ body.light-mode #queue-scroll-thumb {
   }
 
   #queue-panel h3 { font-size: 1.2rem; margin-bottom: 10px; }
-  #queue-panel ul li { font-size: 0.9rem; padding: 8px 8px; margin-bottom: 5px; }
+  #queue-panel ul li { 
+    font-size: 0.9rem; 
+    padding: 10px 8px; 
+    margin-bottom: 5px; 
+    min-height: 50px;
+  }
+  .song-image {
+    width: 40px;
+    height: 40px;
+  }
+  .song-title {
+    font-size: 0.9rem;
+  }
+  .song-artist {
+    font-size: 0.75rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -844,13 +945,29 @@ body.light-mode #queue-scroll-thumb {
   #close-menu { width: 35px; }
 
   #queue-panel {
-    width: 160px;
-    height: 250px;
+    width: 250px;
+    height: 350px;
     left: 1vw;
   }
 
   #queue-panel h3 { font-size: 1.1rem; margin-bottom: 8px; }
-  #queue-panel ul li { font-size: 0.85rem; padding: 7px 7px; margin-bottom: 4px; }
+  #queue-panel ul li { 
+    font-size: 0.85rem; 
+    padding: 8px 6px; 
+    margin-bottom: 4px; 
+    min-height: 45px;
+    gap: 8px;
+  }
+  .song-image {
+    width: 35px;
+    height: 35px;
+  }
+  .song-title {
+    font-size: 0.85rem;
+  }
+  .song-artist {
+    font-size: 0.7rem;
+  }
   
   .menu-item {
     padding: 15px;
