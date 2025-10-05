@@ -81,6 +81,36 @@ const playlist = [
     src: "msc/Creep (Acoustic) - Radiohead.mp3",
     image: "img/capa de creep acoustic.jpeg"
   },
+  { 
+    name: "Given Up", 
+    artist: "Linkin Park", 
+    src: "msc/Given Up - Linkin Park.mp3",
+    image: "img/capa de given up.jpeg"
+  },
+  { 
+    name: "Sweet Child O' Mine", 
+    artist: "Guns N' Roses", 
+    src: "msc/Sweet Child O' Mine - Guns N' Roses.mp3",
+    image: "img/capa de sweet child o mine.jpeg"
+  },
+  { 
+    name: "Highway to Hell", 
+    artist: "ACDC", 
+    src: "msc/Highway to Hell - ACDC.mp3",
+    image: "img/capa de highway to hell.jpeg"
+  },
+  { 
+    name: "Two Faced", 
+    artist: "Linkin Park", 
+    src: "msc/Two Faced - Linkin Park.mp3",
+    image: "img/capa de two faced.jpeg"
+  },
+  { 
+    name: "Ride The Lightning", 
+    artist: "Metallica", 
+    src: "msc/Ride The Lightning - Metallica.mp3",
+    image: "img/capa de ride the lightning.jpg"
+  }
 ];
 let currentIndex = 0; // Começa na primeira música da playlist
 
@@ -301,6 +331,7 @@ function abrirMenuSite() {
   // Fecha a fila de músicas se estiver aberta
   if (queuePanel.classList.contains("active")) {
     queuePanel.classList.remove("active");
+    updateQueueButtonShadow(); // Atualiza a sombra do botão
   }
 }
 
@@ -425,6 +456,7 @@ document.addEventListener("keydown", (e) => {
       }
     } else if (queuePanel.classList.contains("active")) {
       queuePanel.classList.remove("active");
+      updateQueueButtonShadow(); // Atualiza a sombra do botão
       playAltBlock();
     } else {
       abrirMenuSite();
@@ -483,6 +515,24 @@ const queueScrollbar = document.getElementById("queue-scrollbar");
 const queueScrollThumb = document.getElementById("queue-scroll-thumb");
 
 let draggingQueueScroll = false;
+
+// Função para atualizar a sombra do botão da fila
+function updateQueueButtonShadow() {
+  if (queuePanel.classList.contains("active")) {
+    queueBtn.style.filter = "invert(1) drop-shadow(0 0 15px rgba(0, 255, 0, 0.8))";
+  } else {
+    queueBtn.style.filter = "invert(1) drop-shadow(0 2px 6px rgba(0,0,0,0.6))";
+  }
+  
+  // Ajuste para light mode
+  if (document.body.classList.contains("light-mode")) {
+    if (queuePanel.classList.contains("active")) {
+      queueBtn.style.filter = "invert(0) drop-shadow(0 0 15px rgba(0, 255, 0, 0.8))";
+    } else {
+      queueBtn.style.filter = "invert(0) drop-shadow(0 2px 6px rgba(0,0,0,0.6))";
+    }
+  }
+}
 
 // NOVA FUNÇÃO: Popula o painel da fila com o novo layout
 function populateQueuePanel() {
@@ -588,6 +638,7 @@ if (queueBtn) {
     clickAnimation(queueBtn);
     playAltBlock();
     queuePanel.classList.toggle("active");
+    updateQueueButtonShadow(); // Atualiza a sombra do botão
     if (queuePanel.classList.contains("active")) {
       populateQueuePanel(); // Garante que a lista esteja atualizada
     }
@@ -613,4 +664,5 @@ window.addEventListener("load", () => {
   }, { once: true });
 
   populateQueuePanel(); // Popula o painel da fila na carga inicial
+  updateQueueButtonShadow(); // Inicializa a sombra do botão
 });
