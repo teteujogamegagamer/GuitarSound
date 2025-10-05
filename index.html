@@ -12,6 +12,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+  
+  <!-- Ícones do Google (Material Icons) -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
 <body>
@@ -29,6 +32,7 @@
       <div id="main-menu">
         <div class="menu-item" id="shortcuts-btn">
           <span>Atalhos</span>
+          <span class="keyboard-icon">keyboard</span>
         </div>
         <div class="menu-item" id="credits-btn">
           <span>Créditos</span>
@@ -38,18 +42,54 @@
       <div id="shortcuts-menu" class="submenu">
         <div class="submenu-header">
           <img id="back-shortcuts" class="back-btn" src="img/back.png" alt="Voltar">
-          <h3>Atalhos</h3>
+          <h3>Atalhos do Teclado</h3>
         </div>
         <div class="submenu-content">
-          <ul>
-            <li><b>Insert</b> → Reinicia a música</li>
-            <li><b>0</b> → Reinicia a música</li>
-            <li><b>K</b> → Pausa/Resume a música</li>
-            <li><b>Barra de Espaço</b> → Pausa/Resume a música</li>
-            <li><b>R</b> → Reinicia a música do início</li>
-            <li><b>L</b> → Ativa/Desativa o loop</li>
-            <li><b>ESC</b> → Abre/Fecha o menu</li>
-          </ul>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Reiniciar música</div>
+            <div class="shortcut-keys">
+              <kbd class="key">Insert</kbd>
+              <kbd class="key">0</kbd>
+              <kbd class="key">R</kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Pausar/Retomar</div>
+            <div class="shortcut-keys">
+              <kbd class="key">K</kbd>
+              <kbd class="key space">Barra de Espaço</kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Ativar/Desativar loop</div>
+            <div class="shortcut-keys">
+              <kbd class="key">L</kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Abrir/Fechar menu</div>
+            <div class="shortcut-keys">
+              <kbd class="key">ESC</kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Música anterior</div>
+            <div class="shortcut-keys">
+              <kbd class="key"><span class="material-icons">arrow_back</span></kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Próxima música</div>
+            <div class="shortcut-keys">
+              <kbd class="key"><span class="material-icons">arrow_forward</span></kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Abrir/Fechar fila</div>
+            <div class="shortcut-keys">
+              <kbd class="key"><span class="material-icons">queue_music</span></kbd>
+            </div>
+          </div>
         </div>
       </div>
       
