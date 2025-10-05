@@ -431,6 +431,9 @@ body.light-mode #settings-menu {
   transition: all 0.3s ease;
   border: 2px solid transparent;
   font-size: clamp(1rem, 1.2vw, 1.2rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .menu-item:hover {
@@ -451,6 +454,13 @@ body.light-mode .menu-item {
 body.light-mode .menu-item:hover {
   background: rgba(0, 0, 0, 0.15);
   border-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Ícone de teclado no menu */
+.keyboard-icon {
+  font-family: 'Material Icons';
+  font-size: 24px;
+  opacity: 0.7;
 }
 
 /* Submenus */
@@ -527,6 +537,71 @@ body.light-mode .submenu-content li {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
+/* NOVO ESTILO PARA OS ATALHOS */
+.shortcut-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shortcut-item:last-child {
+  border-bottom: none;
+}
+
+body.light-mode .shortcut-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.shortcut-description {
+  font-size: clamp(0.9rem, 1.1vw, 1.1rem);
+  flex: 1;
+}
+
+.shortcut-keys {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.key {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: clamp(0.8rem, 1vw, 1rem);
+  font-family: "Tiny5", sans-serif;
+  color: white;
+  min-width: 40px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+}
+
+body.light-mode .key {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  color: black;
+}
+
+.key.space {
+  min-width: 120px;
+}
+
+.key:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+.key .material-icons {
+  font-size: 18px;
+}
+
 /* Créditos */
 .creator-info {
   display: flex;
@@ -567,14 +642,13 @@ body.light-mode .submenu-content li {
   font-size: clamp(0.9rem, 1vw, 1rem);
 }
 
-/* ATUALIZAÇÃO: Efeito de sombra verde no botão da fila quando ativo */
+/* CORREÇÃO DO BUG: Efeito de sombra verde no botão da fila quando ativo */
 #queue-btn {
   width: 3vw;
   max-width: 40px;
   min-width: 25px;
   height: auto;
   cursor: pointer;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
   transition: transform 0.1s ease, filter 0.3s ease;
   user-select: none;
 }
@@ -583,6 +657,7 @@ body.light-mode .submenu-content li {
   transform: scale(0.9);
 }
 
+/* Estado normal (invertido no tema escuro) */
 #queue-btn {
   filter: invert(1) drop-shadow(0 2px 6px rgba(0,0,0,0.6));
 }
@@ -591,12 +666,12 @@ body.light-mode #queue-btn {
   filter: invert(0) drop-shadow(0 2px 6px rgba(0,0,0,0.6));
 }
 
-/* Efeito de sombra verde quando a fila está ativa */
-#queue-btn.active {
+/* Estado ativo (com sombra verde) - CORREÇÃO APLICADA */
+#queue-panel.active ~ .progress-container #queue-btn {
   filter: invert(1) drop-shadow(0 0 15px rgba(0, 255, 0, 0.8)) !important;
 }
 
-body.light-mode #queue-btn.active {
+body.light-mode #queue-panel.active ~ .progress-container #queue-btn {
   filter: invert(0) drop-shadow(0 0 15px rgba(0, 255, 0, 0.8)) !important;
 }
 
@@ -992,5 +1067,21 @@ body.light-mode #queue-scroll-thumb {
   
   .creator-details p {
     font-size: 0.9rem;
+  }
+
+  /* Ajustes para atalhos em mobile */
+  .shortcut-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .shortcut-keys {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .key.space {
+    min-width: 100px;
   }
 }
