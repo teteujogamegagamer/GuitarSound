@@ -382,6 +382,7 @@ if (contrastBtn) {
     document.body.classList.toggle("light-mode");
     clickAnimation(contrastBtn);
     playAltBlock();
+    updateQueueButtonShadow(); // Atualiza a sombra ao mudar o tema
   });
 }
 
@@ -516,21 +517,14 @@ const queueScrollThumb = document.getElementById("queue-scroll-thumb");
 
 let draggingQueueScroll = false;
 
-// Função para atualizar a sombra do botão da fila
+// CORREÇÃO DO BUG: Função para atualizar a sombra do botão da fila
 function updateQueueButtonShadow() {
+  // A correção agora está no CSS usando seletor de irmão adjacente
+  // Esta função apenas garante que o estado seja consistente
   if (queuePanel.classList.contains("active")) {
-    queueBtn.style.filter = "invert(1) drop-shadow(0 0 15px rgba(0, 255, 0, 0.8))";
+    queueBtn.classList.add("active");
   } else {
-    queueBtn.style.filter = "invert(1) drop-shadow(0 2px 6px rgba(0,0,0,0.6))";
-  }
-  
-  // Ajuste para light mode
-  if (document.body.classList.contains("light-mode")) {
-    if (queuePanel.classList.contains("active")) {
-      queueBtn.style.filter = "invert(0) drop-shadow(0 0 15px rgba(0, 255, 0, 0.8))";
-    } else {
-      queueBtn.style.filter = "invert(0) drop-shadow(0 2px 6px rgba(0,0,0,0.6))";
-    }
+    queueBtn.classList.remove("active");
   }
 }
 
