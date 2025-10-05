@@ -8,8 +8,7 @@ body {
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
   color: white;
-  font-family: "Tiny5", sans-serif; /* Adicionado fonte padrão para o body */
-  /* Previne problemas de zoom */
+  font-family: "Tiny5", sans-serif;
   transform-origin: 0 0;
 }
 
@@ -18,8 +17,7 @@ body {
   align-items: center;
   position: relative;
   flex-wrap: wrap;
-  justify-content: center; /* Centraliza o conteúdo principal */
-  /* Previne problemas de zoom */
+  justify-content: center;
   transform-origin: center center;
 }
 
@@ -63,7 +61,6 @@ body {
   opacity: 0;
   transition: opacity 0.6s ease-in;
   z-index: 1;
-  /* Adicionado sombra preta desfocada */
   filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.7));
 }
 
@@ -570,6 +567,7 @@ body.light-mode .submenu-content li {
   font-size: clamp(0.9rem, 1vw, 1rem);
 }
 
+/* ATUALIZAÇÃO: Efeito de sombra verde no botão da fila quando ativo */
 #queue-btn {
   width: 3vw;
   max-width: 40px;
@@ -591,6 +589,15 @@ body.light-mode .submenu-content li {
 
 body.light-mode #queue-btn {
   filter: invert(0) drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+}
+
+/* Efeito de sombra verde quando a fila está ativa */
+#queue-btn.active {
+  filter: invert(1) drop-shadow(0 0 15px rgba(0, 255, 0, 0.8)) !important;
+}
+
+body.light-mode #queue-btn.active {
+  filter: invert(0) drop-shadow(0 0 15px rgba(0, 255, 0, 0.8)) !important;
 }
 
 /* NOVO ESTILO para o Painel da Fila de Músicas - Layout Spotify */
