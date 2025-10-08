@@ -14,6 +14,7 @@ const ampOff = document.getElementById("amp-off");
 const ampControl = document.querySelector(".amp-control");
 const ampBar = document.getElementById("amp-bar");
 const ampSlider = document.getElementById("amp-slider");
+const volumePercentage = document.getElementById("volume-percentage");
 
 const currentTimeEl = document.getElementById("current-time");
 const totalTimeEl = document.getElementById("total-time");
@@ -25,10 +26,20 @@ const loopBtn = document.getElementById("loop-btn");
 const backBtn = document.getElementById("back-btn");
 const skipBtn = document.getElementById("skip-btn");
 
+// Elementos da barra de pesquisa
+const searchContainer = document.getElementById("search-container");
+const searchInput = document.getElementById("search-input");
+const searchResults = document.getElementById("search-results");
+
 let ampToggle = true;
 let draggingAmp = false;
 let draggingProgress = false;
 let progressInterval = null;
+let volumePercentageTimeout = null;
+
+// Variáveis para controle de atalhos
+let shortcutsEnabled = true;
+let searchActive = false;
 
 // alternador de bloco de som
 let toggleBlock = true;
@@ -138,6 +149,39 @@ function formatTime(sec) {
 }
 
 // ---------------- Volume do amplificador ----------------
+function updateVolumePercentage() {
+  const percentage = Math.round(som.volume * 100);
+  volumePercentage.textContent = `${percentage}%`;
+  
+  // Posicionar o indicador de porcentagem acima do slider
+  const sliderRect = ampSlider.getBoundingClientRect();
+  const barRect = ampBar.getBoundingClientRect();
+  const sliderCenter = sliderRect.left + sliderRect.width / 2;
+  const barLeft = barRect.left;
+  
+  volumePercentage.style.left = `${sliderCenter - barLeft}px`;
+}
+
+function showVolumePercentage() {
+  volumePercentage.classList.add("show");
+  
+  // Limpar timeout anterior
+  if (volumePercentageTimeout) {
+    clearTimeout(volumePercentageTimeout);
+  }
+  
+  // Esconder após 2 segundos
+  volumePercentageTimeout = setTimeout(() => {
+    if (!draggingAmp) {
+      hideVolumePercentage();
+    }
+  }, 2000);
+}
+
+function hideVolumePercentage() {
+  volumePercentage.classList.remove("show");
+}
+
 function setVolumeByPosition(clientX) {
   if (!ampBar || !ampSlider) return;
   const rect = ampBar.getBoundingClientRect();
@@ -151,11 +195,58 @@ function setVolumeByPosition(clientX) {
   const percent = rect.width - sliderWidth > 0 ? leftPos / (rect.width - sliderWidth) : 0;
   som.volume = percent;
   if (!som.paused) updateFire(som.volume);
+  
+  updateVolumePercentage();
+  showVolumePercentage();
+}
+
+function increaseVolume() {
+  let newVolume = som.volume + 0.05;
+  if (newVolume > 1) newVolume = 1;
+  som.volume = newVolume;
+  
+  const barWidth = ampBar.offsetWidth;
+  const sliderWidth = ampSlider.offsetWidth;
+  ampSlider.style.left = `${som.volume * (barWidth - sliderWidth)}px`;
+  
+  if (!som.paused) updateFire(som.volume);
+  updateVolumePercentage();
+  showVolumePercentage();
+  
+  // Mostrar o controle se estiver escondido
+  if (ampToggle && ampControl.style.display === "none") {
+    ampControl.style.display = "flex";
+  }
+}
+
+function decreaseVolume() {
+  let newVolume = som.volume - 0.05;
+  if (newVolume < 0) newVolume = 0;
+  som.volume = newVolume;
+  
+  const barWidth = ampBar.offsetWidth;
+  const sliderWidth = ampSlider.offsetWidth;
+  ampSlider.style.left = `${som.volume * (barWidth - sliderWidth)}px`;
+  
+  if (!som.paused) updateFire(som.volume);
+  updateVolumePercentage();
+  showVolumePercentage();
+  
+  // Mostrar o controle se estiver escondido
+  if (ampToggle && ampControl.style.display === "none") {
+    ampControl.style.display = "flex";
+  }
 }
 
 if (ampBar) ampBar.addEventListener("click", e => setVolumeByPosition(e.clientX));
-if (ampSlider) ampSlider.addEventListener("mousedown", () => draggingAmp = true);
-document.addEventListener("mouseup", () => draggingAmp = false);
+if (ampSlider) ampSlider.addEventListener("mousedown", () => {
+  draggingAmp = true;
+  showVolumePercentage();
+});
+document.addEventListener("mouseup", () => {
+  draggingAmp = false;
+  setTimeout(hideVolumePercentage, 2000);
+});
 document.addEventListener("mousemove", e => {
   if (draggingAmp) setVolumeByPosition(e.clientX);
 });
@@ -170,10 +261,12 @@ if (amp) amp.addEventListener("click", () => {
     const barWidth = ampBar ? ampBar.offsetWidth : 120;
     const sliderWidth = ampSlider ? ampSlider.offsetWidth : 20;
     if (ampSlider) ampSlider.style.left = `${som.volume * (barWidth - sliderWidth)}px`;
+    updateVolumePercentage();
   } else {
     if (ampOff) ampOff.style.opacity = "1";
     setTimeout(() => { if (ampOff) ampOff.style.opacity = "0"; }, 300);
     if (ampControl) ampControl.style.display = "none";
+    hideVolumePercentage();
   }
   ampToggle = !ampToggle;
 });
@@ -250,39 +343,209 @@ som.addEventListener("ended", () => {
   }
 });
 
-// ---------------- Atalhos teclado ----------------
-document.addEventListener("keydown", (e) => {
-  // Barra de espaço - Play/Pause
-  if (e.code === "Space") {
-    e.preventDefault(); // Previne scroll da página
-    togglePlayPause();
+// ---------------- Controle de atalhos ----------------
+function toggleShortcuts(enabled) {
+  shortcutsEnabled = enabled;
+}
+
+// ---------------- Barra de Pesquisa ----------------
+let searchTimeout = null;
+let selectedSearchIndex = -1;
+let currentSearchResults = [];
+
+// Função para pesquisar músicas com prioridade para início do nome
+function searchSongs(query) {
+  if (!query.trim()) {
+    searchResults.innerHTML = '';
+    currentSearchResults = [];
+    selectedSearchIndex = -1;
+    return;
+  }
+
+  const lowercaseQuery = query.toLowerCase();
+  
+  // Primeiro: músicas que começam com a query
+  const startsWithMatches = playlist.filter(song => 
+    song.name.toLowerCase().startsWith(lowercaseQuery) ||
+    song.artist.toLowerCase().startsWith(lowercaseQuery)
+  );
+  
+  // Segundo: músicas que contêm a query
+  const containsMatches = playlist.filter(song => 
+    (song.name.toLowerCase().includes(lowercaseQuery) ||
+     song.artist.toLowerCase().includes(lowercaseQuery)) &&
+    !startsWithMatches.includes(song)
+  );
+
+  // Combinar resultados (primeiro as que começam, depois as que contêm)
+  currentSearchResults = [...startsWithMatches, ...containsMatches];
+  selectedSearchIndex = -1;
+
+  displaySearchResults(currentSearchResults);
+}
+
+// Função para exibir resultados da pesquisa
+function displaySearchResults(results) {
+  searchResults.innerHTML = '';
+
+  if (results.length === 0) {
+    const noResults = document.createElement('div');
+    noResults.className = 'search-result-item';
+    noResults.textContent = 'Nenhuma música encontrada';
+    searchResults.appendChild(noResults);
+    return;
+  }
+
+  results.forEach((song, index) => {
+    const resultItem = document.createElement('div');
+    resultItem.className = 'search-result-item';
+    if (index === selectedSearchIndex) {
+      resultItem.classList.add('selected');
+    }
+    
+    resultItem.innerHTML = `
+      <img src="${song.image}" alt="${song.name}" class="search-result-image" onerror="this.src='img/capa de everlong.jpg'">
+      <div class="search-result-info">
+        <div class="search-result-title">${song.name}</div>
+        <div class="search-result-artist">${song.artist}</div>
+      </div>
+    `;
+
+    resultItem.addEventListener('click', () => {
+      const songIndex = playlist.findIndex(s => s.src === song.src);
+      if (songIndex !== -1) {
+        changeTrack(songIndex, true);
+        searchResults.classList.remove('active');
+        searchInput.value = '';
+        currentSearchResults = [];
+        selectedSearchIndex = -1;
+      }
+      playAltBlock();
+    });
+
+    searchResults.appendChild(resultItem);
+  });
+}
+
+// Função para selecionar item na pesquisa
+function selectSearchItem(index) {
+  const items = searchResults.querySelectorAll('.search-result-item');
+  items.forEach(item => item.classList.remove('selected'));
+  
+  if (index >= 0 && index < items.length) {
+    items[index].classList.add('selected');
+    items[index].scrollIntoView({ block: 'nearest' });
+  }
+}
+
+// Função para tocar música selecionada na pesquisa
+function playSelectedSearchItem() {
+  if (selectedSearchIndex >= 0 && selectedSearchIndex < currentSearchResults.length) {
+    const song = currentSearchResults[selectedSearchIndex];
+    const songIndex = playlist.findIndex(s => s.src === song.src);
+    if (songIndex !== -1) {
+      changeTrack(songIndex, true);
+      searchResults.classList.remove('active');
+      searchInput.value = '';
+      currentSearchResults = [];
+      selectedSearchIndex = -1;
+      playAltBlock();
+    }
+  }
+}
+
+// Função para abrir/fechar barra de pesquisa
+function toggleSearch() {
+  if (searchContainer.style.display === 'none' || searchContainer.style.display === '') {
+    searchContainer.style.display = 'block';
+    searchInput.focus();
+  } else {
+    searchContainer.style.display = 'none';
+    searchResults.classList.remove('active');
+    searchInput.value = '';
+    currentSearchResults = [];
+    selectedSearchIndex = -1;
+  }
+}
+
+// Event listeners para a barra de pesquisa
+searchInput.addEventListener('focus', () => {
+  searchActive = true;
+  toggleShortcuts(false);
+  searchResults.classList.add('active');
+});
+
+searchInput.addEventListener('blur', () => {
+  searchActive = false;
+  setTimeout(() => {
+    if (!searchInput.matches(':focus')) {
+      toggleShortcuts(true);
+    }
+  }, 100);
+});
+
+searchInput.addEventListener('input', (e) => {
+  const query = e.target.value;
+  
+  // Limpar timeout anterior
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
   }
   
-  // R - Reiniciar música do início
-  if (e.code === "KeyR") {
-    e.preventDefault();
-    som.currentTime = 0;
-    updateProgress();
-    if (!som.paused) updateFire(som.volume);
-    else if (fire) fire.style.opacity = "0";
-  }
+  // Debounce para evitar muitas pesquisas
+  searchTimeout = setTimeout(() => {
+    searchSongs(query);
+  }, 300);
+});
+
+// Event listener para teclas na pesquisa
+searchInput.addEventListener('keydown', (e) => {
+  if (!searchResults.classList.contains('active')) return;
   
-  // L - Ativar/desativar loop
-  if (e.code === "KeyL") {
-    e.preventDefault();
-    isLooping = !isLooping;
-    loopBtn.classList.toggle("active");
-    playAltBlock();
+  switch(e.key) {
+    case 'ArrowDown':
+      e.preventDefault();
+      if (currentSearchResults.length > 0) {
+        selectedSearchIndex = (selectedSearchIndex + 1) % currentSearchResults.length;
+        selectSearchItem(selectedSearchIndex);
+      }
+      break;
+      
+    case 'ArrowUp':
+      e.preventDefault();
+      if (currentSearchResults.length > 0) {
+        selectedSearchIndex = selectedSearchIndex <= 0 ? currentSearchResults.length - 1 : selectedSearchIndex - 1;
+        selectSearchItem(selectedSearchIndex);
+      }
+      break;
+      
+    case 'Enter':
+      e.preventDefault();
+      if (selectedSearchIndex >= 0) {
+        playSelectedSearchItem();
+      } else if (currentSearchResults.length > 0) {
+        // Se nenhum item está selecionado, toca o primeiro
+        selectedSearchIndex = 0;
+        playSelectedSearchItem();
+      }
+      break;
+      
+    case 'Escape':
+      searchResults.classList.remove('active');
+      searchInput.value = '';
+      currentSearchResults = [];
+      selectedSearchIndex = -1;
+      break;
   }
-  
-  // Atalhos originais mantidos
-  if (e.code === "Digit0" || e.code === "Insert") {
-    som.currentTime = 0;
-    updateProgress();
-    if (!som.paused) updateFire(som.volume);
-    else if (fire) fire.style.opacity = "0";
+});
+
+// Fechar pesquisa ao clicar fora
+document.addEventListener('click', (e) => {
+  if (!searchContainer.contains(e.target)) {
+    searchResults.classList.remove('active');
+    currentSearchResults = [];
+    selectedSearchIndex = -1;
   }
-  if (e.code === "KeyK") togglePlayPause();
 });
 
 // ---------------- Contraste / Menu ----------------
@@ -332,6 +595,14 @@ function abrirMenuSite() {
   if (queuePanel.classList.contains("active")) {
     queuePanel.classList.remove("active");
     updateQueueButtonShadow(); // Atualiza a sombra do botão
+  }
+  // Fecha a pesquisa se estiver aberta
+  if (searchResults.classList.contains("active")) {
+    searchResults.classList.remove("active");
+    searchInput.value = "";
+    searchResults.innerHTML = "";
+    currentSearchResults = [];
+    selectedSearchIndex = -1;
   }
 }
 
@@ -459,6 +730,12 @@ document.addEventListener("keydown", (e) => {
       queuePanel.classList.remove("active");
       updateQueueButtonShadow(); // Atualiza a sombra do botão
       playAltBlock();
+    } else if (searchResults.classList.contains("active")) {
+      searchResults.classList.remove("active");
+      searchInput.value = "";
+      searchResults.innerHTML = "";
+      currentSearchResults = [];
+      selectedSearchIndex = -1;
     } else {
       abrirMenuSite();
     }
@@ -488,9 +765,9 @@ function changeTrack(index, autoPlay = true) {
     som.play().catch(err => console.log("Erro ao tocar nova faixa:", err));
     updateFire(som.volume);
     startProgressUpdater();
-    playAltBlock();
   }
-  updateQueuePanelCurrentSong(); // Atualiza a classe 'current-song'
+
+  updateQueuePanelCurrentSong(); // Atualiza a música atual na fila
 }
 
 // ---------------- Botões: loop / back / skip ----------------
@@ -525,6 +802,15 @@ function updateQueueButtonShadow() {
     queueBtn.classList.add("active");
   } else {
     queueBtn.classList.remove("active");
+  }
+}
+
+// Função para abrir/fechar painel da fila
+function toggleQueuePanel() {
+  queuePanel.classList.toggle("active");
+  updateQueueButtonShadow();
+  if (queuePanel.classList.contains("active")) {
+    populateQueuePanel(); // Garante que a lista esteja atualizada
   }
 }
 
@@ -631,13 +917,170 @@ if (queueBtn) {
   queueBtn.addEventListener("click", () => {
     clickAnimation(queueBtn);
     playAltBlock();
-    queuePanel.classList.toggle("active");
-    updateQueueButtonShadow(); // Atualiza a sombra do botão
-    if (queuePanel.classList.contains("active")) {
-      populateQueuePanel(); // Garante que a lista esteja atualizada
-    }
+    toggleQueuePanel();
   });
 }
+
+// ---------------- Novos atalhos do teclado ----------------
+document.addEventListener("keydown", (e) => {
+  // Se a pesquisa está ativa, desativa a maioria dos atalhos
+  if (searchActive) {
+    // Permite apenas Ctrl+K e Escape na pesquisa
+    if ((e.ctrlKey && e.key === 'k') || e.key === 'Escape') {
+      // Permite que esses atalhos funcionem
+    } else {
+      // Bloqueia outros atalhos quando a pesquisa está ativa
+      return;
+    }
+  }
+
+  // Se atalhos estão desativados, não executa
+  if (!shortcutsEnabled) return;
+
+  // Ctrl + K - Abrir/fechar pesquisa
+  if (e.ctrlKey && e.key === 'k') {
+    e.preventDefault();
+    toggleSearch();
+    return;
+  }
+
+  // Ctrl + A - Abrir/fechar volume (só funciona se menus estiverem fechados)
+  if (e.ctrlKey && e.key === 'a') {
+    if (!settingsMenu.classList.contains("active") && !queuePanel.classList.contains("active") && !searchActive) {
+      e.preventDefault();
+      if (ampToggle) {
+        // Fecha a barra de volume
+        ampToggle = false;
+        if (ampControl) ampControl.style.display = "none";
+        hideVolumePercentage();
+        if (ampOff) {
+          ampOff.style.opacity = "1";
+          setTimeout(() => { if (ampOff) ampOff.style.opacity = "0"; }, 300);
+        }
+      } else {
+        // Abre a barra de volume
+        ampToggle = true;
+        if (ampOn) {
+          ampOn.style.opacity = "1";
+          setTimeout(() => { if (ampOn) ampOn.style.opacity = "0"; }, 300);
+        }
+        if (ampControl) ampControl.style.display = "flex";
+        const barWidth = ampBar ? ampBar.offsetWidth : 120;
+        const sliderWidth = ampSlider ? ampSlider.offsetWidth : 20;
+        if (ampSlider) ampSlider.style.left = `${som.volume * (barWidth - sliderWidth)}px`;
+        updateVolumePercentage();
+        showVolumePercentage();
+      }
+      playAltBlock();
+      return;
+    }
+  }
+
+  // Ctrl + J - Abrir/fechar fila
+  if (e.ctrlKey && e.key === 'j') {
+    e.preventDefault();
+    toggleQueuePanel();
+    playAltBlock();
+    return;
+  }
+
+  // Ctrl + L - Ativar/desativar loop
+  if (e.ctrlKey && e.key === 'l') {
+    e.preventDefault();
+    isLooping = !isLooping;
+    loopBtn.classList.toggle("active");
+    playAltBlock();
+    return;
+  }
+
+  // Ctrl + . - Alternar tema
+  if (e.ctrlKey && e.key === '.') {
+    e.preventDefault();
+    document.body.classList.toggle("light-mode");
+    playAltBlock();
+    updateQueueButtonShadow();
+    return;
+  }
+
+  // J - Música anterior
+  if (e.key === 'j' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    e.preventDefault();
+    playAltBlock();
+    changeTrack(currentIndex - 1, true);
+    return;
+  }
+
+  // L - Próxima música
+  if (e.key === 'l' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    e.preventDefault();
+    playAltBlock();
+    changeTrack(currentIndex + 1, true);
+    return;
+  }
+
+  // Setas para avançar/retroceder 5 segundos
+  if (e.key === 'ArrowLeft' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    e.preventDefault();
+    som.currentTime = Math.max(0, som.currentTime - 5);
+    updateProgress();
+    playAltBlock();
+    return;
+  }
+
+  if (e.key === 'ArrowRight' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    e.preventDefault();
+    som.currentTime = Math.min(som.duration, som.currentTime + 5);
+    updateProgress();
+    playAltBlock();
+    return;
+  }
+
+  // Setas para volume - SÓ FUNCIONAM COM AMP LIGADO
+  if (e.key === 'ArrowUp' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    e.preventDefault();
+    // Só aumenta o volume se o amplificador estiver ligado e a barra de volume estiver visível
+    if (ampToggle && ampControl.style.display === "flex") {
+      increaseVolume();
+    }
+    return;
+  }
+
+  if (e.key === 'ArrowDown' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    e.preventDefault();
+    // Só diminui o volume se o amplificador estiver ligado e a barra de volume estiver visível
+    if (ampToggle && ampControl.style.display === "flex") {
+      decreaseVolume();
+    }
+    return;
+  }
+
+  // Atalhos originais (apenas se atalhos estiverem habilitados)
+  if (shortcutsEnabled) {
+    // Barra de espaço - Play/Pause
+    if (e.code === "Space") {
+      e.preventDefault(); // Previne scroll da página
+      togglePlayPause();
+    }
+    
+    // R - Reiniciar música do início
+    if (e.code === "KeyR") {
+      e.preventDefault();
+      som.currentTime = 0;
+      updateProgress();
+      if (!som.paused) updateFire(som.volume);
+      else if (fire) fire.style.opacity = "0";
+    }
+    
+    // Atalhos originais mantidos
+    if (e.code === "Digit0" || e.code === "Insert") {
+      som.currentTime = 0;
+      updateProgress();
+      if (!som.paused) updateFire(som.volume);
+      else if (fire) fire.style.opacity = "0";
+    }
+    if (e.code === "KeyK") togglePlayPause();
+  }
+});
 
 // ---------------- Inicialização ----------------
 window.addEventListener("load", () => {
@@ -659,4 +1102,5 @@ window.addEventListener("load", () => {
 
   populateQueuePanel(); // Popula o painel da fila na carga inicial
   updateQueueButtonShadow(); // Inicializa a sombra do botão
+  updateVolumePercentage(); // Inicializa a porcentagem do volume
 });
