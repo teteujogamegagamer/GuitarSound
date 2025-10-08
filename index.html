@@ -19,6 +19,17 @@
 
 <body>
   <div class="container">
+    <!-- Barra de pesquisa -->
+    <div id="search-container">
+      <div id="search-bar">
+        <input type="text" id="search-input" placeholder="Buscar músicas...">
+        <span id="search-icon" class="material-icons">search</span>
+      </div>
+      <div id="search-results">
+        <!-- Resultados da pesquisa aparecerão aqui -->
+      </div>
+    </div>
+
     <!-- Botão de contraste -->
     <img id="contrast-toggle" src="img/contraste.png" alt="Contraste">
     <img id="settings-toggle" src="img/engrenagem.png" alt="Configurações">
@@ -63,6 +74,7 @@
           <div class="shortcut-item">
             <div class="shortcut-description">Ativar/Desativar loop</div>
             <div class="shortcut-keys">
+              <kbd class="key">Ctrl</kbd>
               <kbd class="key">L</kbd>
             </div>
           </div>
@@ -75,19 +87,65 @@
           <div class="shortcut-item">
             <div class="shortcut-description">Música anterior</div>
             <div class="shortcut-keys">
-              <kbd class="key"><span class="material-icons">arrow_back</span></kbd>
+              <kbd class="key">J</kbd>
             </div>
           </div>
           <div class="shortcut-item">
             <div class="shortcut-description">Próxima música</div>
             <div class="shortcut-keys">
-              <kbd class="key"><span class="material-icons">arrow_forward</span></kbd>
+              <kbd class="key">L</kbd>
             </div>
           </div>
           <div class="shortcut-item">
             <div class="shortcut-description">Abrir/Fechar fila</div>
             <div class="shortcut-keys">
-              <kbd class="key"><span class="material-icons">queue_music</span></kbd>
+              <kbd class="key">Ctrl</kbd>
+              <kbd class="key">J</kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Aumentar volume (com amp ligado)</div>
+            <div class="shortcut-keys">
+              <kbd class="key"><span class="material-icons">arrow_upward</span></kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Diminuir volume (com amp ligado)</div>
+            <div class="shortcut-keys">
+              <kbd class="key"><span class="material-icons">arrow_downward</span></kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Abrir/Fechar pesquisa</div>
+            <div class="shortcut-keys">
+              <kbd class="key">Ctrl</kbd>
+              <kbd class="key">K</kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Abrir/Fechar volume</div>
+            <div class="shortcut-keys">
+              <kbd class="key">Ctrl</kbd>
+              <kbd class="key">A</kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Voltar 5 segundos</div>
+            <div class="shortcut-keys">
+              <kbd class="key"><span class="material-icons">arrow_back</span></kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Avançar 5 segundos</div>
+            <div class="shortcut-keys">
+              <kbd class="key"><span class="material-icons">arrow_forward</span></kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <div class="shortcut-description">Alternar tema</div>
+            <div class="shortcut-keys">
+              <kbd class="key">Ctrl</kbd>
+              <kbd class="key">.</kbd>
             </div>
           </div>
         </div>
@@ -163,6 +221,7 @@
         <span id="amp-label">Vol.</span>
         <div id="amp-bar">
           <div id="amp-slider"></div>
+          <div id="volume-percentage">50%</div>
         </div>
       </div>
     </div>
