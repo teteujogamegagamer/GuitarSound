@@ -18,41 +18,47 @@
 </head>
 
 <body>
+  <!-- Elemento de status para acessibilidade -->
+  <div id="player-status" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  
+  <!-- Elemento de loading -->
+  <div id="loading-state" class="loading-state">Carregando...</div>
+
   <div class="container">
     <!-- Barra de pesquisa -->
     <div id="search-container">
       <div id="search-bar">
-        <input type="text" id="search-input" placeholder="Buscar músicas...">
-        <span id="search-icon" class="material-icons">search</span>
+        <input type="text" id="search-input" placeholder="Buscar músicas..." aria-label="Buscar músicas">
+        <span id="search-icon" class="material-icons" role="button" aria-label="Pesquisar">search</span>
       </div>
-      <div id="search-results">
+      <div id="search-results" aria-label="Resultados da pesquisa">
         <!-- Resultados da pesquisa aparecerão aqui -->
       </div>
     </div>
 
     <!-- Botão de contraste -->
-    <img id="contrast-toggle" src="img/contraste.png" alt="Contraste">
-    <img id="settings-toggle" src="img/engrenagem.png" alt="Configurações">
+    <img id="contrast-toggle" src="img/contraste.png" alt="Alternar tema claro/escuro" role="button" tabindex="0">
+    <img id="settings-toggle" src="img/engrenagem.png" alt="Abrir configurações" role="button" tabindex="0">
 
     <div id="settings-overlay"></div>
 
-    <div id="settings-menu">
-      <img id="close-menu" src="img/x.png" alt="Fechar menu">
-      <h2>Configurações</h2>
+    <div id="settings-menu" role="dialog" aria-labelledby="settings-title" aria-modal="true">
+      <img id="close-menu" src="img/x.png" alt="Fechar menu" role="button" tabindex="0">
+      <h2 id="settings-title">Configurações</h2>
       
       <div id="main-menu">
-        <div class="menu-item" id="shortcuts-btn">
+        <div class="menu-item" id="shortcuts-btn" role="button" tabindex="0" aria-label="Ver atalhos de teclado">
           <span>Atalhos</span>
           <span class="keyboard-icon">keyboard</span>
         </div>
-        <div class="menu-item" id="credits-btn">
+        <div class="menu-item" id="credits-btn" role="button" tabindex="0" aria-label="Ver créditos">
           <span>Créditos</span>
         </div>
       </div>
       
       <div id="shortcuts-menu" class="submenu">
         <div class="submenu-header">
-          <img id="back-shortcuts" class="back-btn" src="img/back.png" alt="Voltar">
+          <img id="back-shortcuts" class="back-btn" src="img/back.png" alt="Voltar para menu principal" role="button" tabindex="0">
           <h3>Atalhos do Teclado</h3>
         </div>
         <div class="submenu-content">
@@ -153,13 +159,13 @@
       
       <div id="credits-menu" class="submenu">
         <div class="submenu-header">
-          <img id="back-credits" class="back-btn" src="img/back.png" alt="Voltar">
+          <img id="back-credits" class="back-btn" src="img/back.png" alt="Voltar para menu principal" role="button" tabindex="0">
           <h3>Créditos</h3>
         </div>
         <div class="submenu-content">
           <div class="creator-info">
             <div class="creator-image">
-              <img src="img/criador do site.jpeg" alt="criador do site" class="creator-photo">
+              <img src="img/criador do site.jpeg" alt="Foto do criador do site - Mateus Oliveira Lopes" class="creator-photo">
             </div>
             <div class="creator-details">
               <h4>Mateus Oliveira Lopes</h4>
@@ -170,11 +176,31 @@
       </div>
     </div>
 
-    <!-- Painel da fila de músicas (agora posicionado no CSS) -->
-    <div id="queue-panel">
-      <h3>Fila de músicas</h3>
+    <!-- NOVO MENU DE CUSTOMIZAÇÃO DE GUITARRA -->
+    <div id="guitar-customization-overlay"></div>
+
+    <div id="guitar-customization-menu" role="dialog" aria-labelledby="guitar-customization-title" aria-modal="true">
+      <img id="close-guitar-menu" src="img/x.png" alt="Fechar menu de customização" role="button" tabindex="0">
+      <h2 id="guitar-customization-title">Customizar Guitarra</h2>
+      
+      <div class="guitar-categories">
+        <div class="category-tabs">
+          <button class="category-tab active" data-category="stratocasters">Stratocasters</button>
+          <button class="category-tab" data-category="warlocks">Warlocks</button>
+          <button class="category-tab" data-category="acusticos">Acústicos</button>
+        </div>
+        
+        <div class="guitar-grid" id="guitar-grid">
+          <!-- As guitarras serão carregadas dinamicamente via JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel da fila de músicas -->
+    <div id="queue-panel" role="dialog" aria-labelledby="queue-title" aria-modal="true">
+      <h3 id="queue-title">Fila de músicas</h3>
       <div class="queue-list-wrapper">
-        <ul id="song-list">
+        <ul id="song-list" aria-label="Lista de músicas">
           <!-- As músicas serão preenchidas via JavaScript para poder manipular a classe de "música atual" -->
         </ul>
         <div id="queue-scrollbar">
@@ -186,13 +212,13 @@
     <!-- Barra de progresso + ícones -->
     <div class="progress-container">
       <div class="controls-left">
-        <img id="back-btn" src="img/back.png" alt="Voltar música">
-        <img id="loop-btn" src="img/loop.png" alt="Loop">
+        <img id="back-btn" src="img/back.png" alt="Música anterior" role="button" tabindex="0">
+        <img id="loop-btn" src="img/loop.png" alt="Ativar/desativar loop" role="button" tabindex="0">
       </div>
 
       <div class="progress-center">
-        <span id="current-time">0:00</span>
-        <div id="progress-bar">
+        <span id="current-time" aria-live="polite">0:00</span>
+        <div id="progress-bar" role="slider" aria-label="Progresso da música" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
           <div id="progress-fill"></div>
           <div id="progress-thumb"></div>
         </div>
@@ -200,26 +226,26 @@
       </div>
 
       <div class="controls-right">
-        <img id="skip-btn" src="img/skip.png" alt="Avançar música">
-        <img id="queue-btn" src="img/filademusica.png" alt="Fila de músicas">
+        <img id="skip-btn" src="img/skip.png" alt="Próxima música" role="button" tabindex="0">
+        <img id="queue-btn" src="img/filademusica.png" alt="Abrir/fechar fila de músicas" role="button" tabindex="0">
       </div>
     </div>
 
     <!-- Fogo atrás da guitarra -->
-    <img id="fire" src="img/chamas.gif" alt="Fogo">
+    <img id="fire" src="img/chamas.gif" alt="Efeito de fogo animado">
 
     <!-- Amplificador à esquerda -->
     <div class="amp-container">
-      <img id="amp" src="img/amplificador marshall.png" alt="Amplificador">
-      <img id="amp-on" src="img/ligado.png" alt="Ligado">
-      <img id="amp-off" src="img/desligado.png" alt="Desligado">
+      <img id="amp" src="img/amplificador marshall.png" alt="Amplificador - ligar/desligar" role="button" tabindex="0">
+      <img id="amp-on" src="img/ligado.png" alt="Amplificador ligado">
+      <img id="amp-off" src="img/desligado.png" alt="Amplificador desligado">
       <audio id="abrirMenu" src="effects/abrirmenu.mp3"></audio>
       <audio id="fecharMenu" src="effects/fecharmenu.mp3"></audio>
 
       <!-- Barrinha de volume -->
       <div class="amp-control">
         <span id="amp-label">Vol.</span>
-        <div id="amp-bar">
+        <div id="amp-bar" role="slider" aria-label="Controle de volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" tabindex="0">
           <div id="amp-slider"></div>
           <div id="volume-percentage">50%</div>
         </div>
@@ -228,9 +254,11 @@
 
     <!-- Guitarra central -->
     <div class="guitar-container">
-      <img id="guitarra" src="guitars/Stratocaster-PHX-Ciano de teteujoga.png" alt="Guitarra">
-      <div id="play-icon"><img src="img/play.png" alt=""></div>
-      <div id="pause-icon"><img src="img/pause.png" alt=""></div>
+      <img id="guitarra" src="guitars/PHX Ciano.png" alt="Guitarra - reproduzir/pausar música" role="button" tabindex="0">
+      <div id="play-icon"><img src="img/play.png" alt="Ícone de play"></div>
+      <div id="pause-icon"><img src="img/pause.png" alt="Ícone de pause"></div>
+      <!-- ÍCONE DO PINCEL REPOSICIONADO - AGORA À ESQUERDA DA GUITARRA -->
+      <img id="brush-toggle" src="img/pincel.png" alt="Customizar guitarra" role="button" tabindex="0">
     </div>
   </div>
 
