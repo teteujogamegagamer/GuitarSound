@@ -1,3 +1,4 @@
 # GuitarSound 🎸
-<img width="800" height="420" alt="image" src="https://github.com/user-attachments/assets/16b29fbe-3a74-40a9-a130-bafae634bd10" />
+<img width="874" height="564" alt="image" src="https://github.com/user-attachments/assets/ebc66183-1ea0-48b9-91d8-b715f23abfce" />
+
 
