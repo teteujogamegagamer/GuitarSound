@@ -1,3 +1,78 @@
+// ---------------- SISTEMA DE ESTADO GLOBAL (SINGLETON) ----------------
+const AppState = (function() {
+    let instance;
+    
+    function createInstance() {
+        return {
+            // Estado do player
+            audio: null,
+            currentTrack: 0,
+            isPlaying: false,
+            volume: 0.5,
+            isLooping: false,
+            
+            // Estado da UI
+            currentMenu: null, // 'settings', 'guitar', 'queue', 'search'
+            theme: 'dark', // 'dark' | 'light'
+            searchQuery: '',
+            
+            // Controles
+            shortcutsEnabled: true,
+            isDragging: false,
+            
+            // Métodos de utilidade
+            setMenu(menu) {
+                this.currentMenu = menu;
+                this.updateUIState();
+            },
+            
+            updateUIState() {
+                this.updateSearchContainerState();
+                this.updateShortcutsState();
+            },
+            
+            updateSearchContainerState() {
+                const searchContainer = document.getElementById('search-container');
+                if (searchContainer) {
+                    if (this.currentMenu && this.currentMenu !== 'search') {
+                        searchContainer.classList.add("menu-open");
+                    } else {
+                        searchContainer.classList.remove("menu-open");
+                    }
+                }
+            },
+            
+            updateShortcutsState() {
+                this.shortcutsEnabled = !this.currentMenu || this.currentMenu === 'queue';
+            },
+            
+            // Gerenciamento de áudio
+            playAudio() {
+                if (this.audio && !this.isPlaying) {
+                    this.audio.play().catch(console.error);
+                    this.isPlaying = true;
+                }
+            },
+            
+            pauseAudio() {
+                if (this.audio && this.isPlaying) {
+                    this.audio.pause();
+                    this.isPlaying = false;
+                }
+            }
+        };
+    }
+    
+    return {
+        getInstance: function() {
+            if (!instance) {
+                instance = createInstance();
+            }
+            return instance;
+        }
+    };
+})();
+
 // ---------------- UTILITÁRIOS DE SEGURANÇA ----------------
 function safeGetElement(id) {
     const element = document.getElementById(id);
@@ -97,36 +172,184 @@ class AudioErrorHandler {
     }
 }
 
-// ---------------- MANIPULAÇÃO DE IMAGENS COM FALLBACK ----------------
+// ---------------- MANIPULAÇÃO DE IMAGENS COM FALLBACK MELHORADO ----------------
 function setupImageErrorHandling() {
     document.querySelectorAll('img').forEach(img => {
-        img.addEventListener('error', function() {
-            handleImageError(this);
-        });
+        // Só adiciona handler se a imagem não tiver um já
+        if (!img.hasAttribute('data-error-handled')) {
+            img.setAttribute('data-error-handled', 'true');
+            img.addEventListener('error', function() {
+                handleImageError(this);
+            });
+            
+            // Marcar como carregada quando carregar com sucesso
+            img.addEventListener('load', function() {
+                this.setAttribute('loaded', 'true');
+            });
+        }
     });
 }
 
+// CORREÇÃO: Tratamento de erro de imagens sem loop
 function handleImageError(img) {
     console.warn('Erro ao carregar imagem:', img.src);
     
-    // Fallback hierárquico
     const fallbacks = [
-        'img/capas/capa de everlong.jpg', // Tenta a capa padrão primeiro
-        'img/guitar logo.png'             // Fallback final
+        'img/capas/capa de everlong.jpg',
+        'img/guitar logo.png'
     ];
     
     let currentFallback = 0;
+    
     const tryNextFallback = () => {
         if (currentFallback < fallbacks.length) {
+            console.log('Tentando fallback:', fallbacks[currentFallback]);
             img.src = fallbacks[currentFallback++];
         } else {
-            // Remove o listener para evitar loop infinito
-            img.removeEventListener('error', handleImageError);
+            // Remove completamente o src para evitar loops
+            img.src = '';
+            img.alt = 'Imagem não disponível';
+            console.warn('Todos os fallbacks falharam para:', img);
         }
     };
     
+    // Usa onload/onerror para controlar melhor
     img.onerror = tryNextFallback;
+    img.onload = () => {
+        console.log('Imagem carregada com sucesso:', img.src);
+        img.setAttribute('loaded', 'true');
+        // Remove o handler de erro após carregar com sucesso
+        img.onerror = null;
+    };
+    
     tryNextFallback();
+}
+
+// ---------------- FOCUS TRAP PARA ACESSIBILIDADE ----------------
+function initFocusTrap() {
+    const modals = ['settings-menu', 'guitar-customization-menu', 'queue-panel'];
+    
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            setupFocusTrap(modal);
+        }
+    });
+}
+
+function setupFocusTrap(modalElement) {
+    const focusableElements = modalElement.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    
+    if (focusableElements.length === 0) return;
+    
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    
+    modalElement.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+            if (e.shiftKey) {
+                // Shift + Tab
+                if (document.activeElement === firstElement) {
+                    e.preventDefault();
+                    lastElement.focus();
+                }
+            } else {
+                // Tab
+                if (document.activeElement === lastElement) {
+                    e.preventDefault();
+                    firstElement.focus();
+                }
+            }
+        }
+    });
+}
+
+function closeActiveModal() {
+    const appState = AppState.getInstance();
+    
+    switch(appState.currentMenu) {
+        case 'settings':
+            fecharMenuSite();
+            break;
+        case 'guitar':
+            closeGuitarCustomizationMenu();
+            break;
+        case 'queue':
+            toggleQueuePanel();
+            break;
+        case 'search':
+            closeSearchResults();
+            break;
+    }
+}
+
+// ---------------- PRÉ-CARREGAMENTO INTELIGENTE ----------------
+function intelligentPreload() {
+    // Só pré-carrega o essencial inicialmente
+    const criticalAssets = [
+        'img/guitar logo.png',
+        'img/play.png', 
+        'img/pause.png',
+        'guitars/PHX Ciano.png'
+    ];
+    
+    criticalAssets.forEach(src => {
+        const img = new Image();
+        img.src = src;
+    });
+    
+    // Pré-carrega o resto quando ocioso
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+            preloadRemainingAssets();
+        });
+    } else {
+        // Fallback para browsers antigos
+        setTimeout(preloadRemainingAssets, 1000);
+    }
+}
+
+function preloadRemainingAssets() {
+    const remainingAssets = [
+        'img/contraste.png',
+        'img/engrenagem.png',
+        'img/pincel.png',
+        'img/back.png',
+        'img/skip.png',
+        'img/loop.png',
+        'img/filademusica.png',
+        'img/ligado.png',
+        'img/desligado.png',
+        'img/chamas.gif',
+        'img/x.png'
+    ];
+    
+    // Pré-carregar imagens de guitarras
+    Object.values(guitarCatalog).forEach(category => {
+        category.forEach(guitar => {
+            remainingAssets.push(guitar.src);
+        });
+    });
+    
+    remainingAssets.forEach(src => {
+        const img = new Image();
+        img.src = src;
+    });
+    
+    // Pré-carregamento de áudio não crítico
+    const audioToPreload = [
+        'effects/abrirmenu.mp3',
+        'effects/fecharmenu.mp3',
+        'effects/block 1.mp3',
+        'effects/block 2.mp3'
+    ];
+    
+    audioToPreload.forEach(src => {
+        const audio = new Audio();
+        audio.src = src;
+    });
 }
 
 // ---------------- SELEÇÃO DE ELEMENTOS COM VALIDAÇÃO ----------------
@@ -175,9 +398,7 @@ let draggingAmp = false;
 let draggingProgress = false;
 let progressInterval = null;
 let volumePercentageTimeout = null;
-let shortcutsEnabled = true;
 let searchActive = false;
-let guitarMenuOpen = false;
 
 // alternador de bloco de som
 let toggleBlock = true;
@@ -210,64 +431,186 @@ const playlist = [
         name: "Everlong", 
         artist: "Foo Fighters", 
         src: "msc/Everlong - Foo Fighters.mp3",
-        image: "img/capas/capa de everlong.jpg"
+        image: "capas/capa de everlong.jpg"
     },
     { 
         name: "Rooster (2022 Remaster)", 
         artist: "Alice in Chains", 
         src: "msc/Rooster (2022 Remaster) - Alice in Chains.mp3",
-        image: "img/capas/capa de rooster.jpeg"
+        image: "capas/capa de rooster.jpeg"
     },
     { 
         name: "Tear Away", 
         artist: "Drowning Pool", 
         src: "msc/Tear Away - Drowning Pool.mp3",
-        image: "img/capas/capa de tear away.jpeg"
+        image: "capas/capa de tear away.jpeg"
     },
     { 
         name: "Be Quiet and Drive (Far Away)", 
         artist: "Deftones", 
         src: "msc/Be Quiet and Drive (Far Away) - Deftones.mp3",
-        image: "img/capas/capa de be quiet and drive.jpeg"
+        image: "capas/capa de be quiet and drive.jpeg"
     },
     { 
         name: "Creep (Acoustic)", 
         artist: "Radiohead", 
         src: "msc/Creep (Acoustic) - Radiohead.mp3",
-        image: "img/capas/capa de creep acoustic.jpeg"
+        image: "capas/capa de creep acoustic.jpeg"
     },
     { 
         name: "Given Up", 
         artist: "Linkin Park", 
-        src: "msc/Given Up - Linkin Park.mp3",
-        image: "img/capas/capa de given up.jpeg"
+        src: "msc/Given Up - Linkin Park.mp3", 
+        image: "capas/capa de given up.jpeg"
     },
     { 
         name: "Sweet Child O' Mine", 
         artist: "Guns N' Roses", 
         src: "msc/Sweet Child O' Mine - Guns N' Roses.mp3",
-        image: "img/capas/capa de sweet child o mine.jpeg"
+        image: "capas/capa de sweet child o mine.jpeg"
     },
     { 
         name: "Highway to Hell", 
         artist: "ACDC", 
         src: "msc/Highway to Hell - ACDC.mp3",
-        image: "img/capas/capa de highway to hell.jpeg"
+        image: "capas/capa de highway to hell.jpeg"
     },
     { 
         name: "Two Faced", 
         artist: "Linkin Park", 
-        src: "msc/Two Faced - Linkin Park.mp3",
-        image: "img/capas/capa de two faced.jpeg"
+        src: "msc/Two Faced - Linkin Park.mp3", 
+        image: "capas/capa de two faced.jpeg"
     },
     { 
         name: "Ride The Lightning", 
         artist: "Metallica", 
         src: "msc/Ride The Lightning - Metallica.mp3",
-        image: "img/capas/capa de ride the lightning.jpg"
+        image: "capas/capa de ride the lightning.jpg"
     }
 ];
 let currentIndex = 0;
+
+// ---------------- SISTEMA DE FILA DINÂMICA - CORRIGIDO ----------------
+let queueOrder = [...Array(playlist.length).keys()]; // [0, 1, 2, 3, ...]
+let previousSongIndex = -1;
+
+function updateQueueOrder() {
+    // Se temos uma música anterior e ela é diferente da atual
+    if (previousSongIndex !== -1 && previousSongIndex !== currentIndex) {
+        // Remove a música anterior da posição atual na fila
+        const prevIndexInQueue = queueOrder.indexOf(previousSongIndex);
+        if (prevIndexInQueue !== -1) {
+            queueOrder.splice(prevIndexInQueue, 1);
+            // Adiciona no final
+            queueOrder.push(previousSongIndex);
+        }
+    }
+    
+    // Garante que a música atual esteja no topo
+    const currentIndexInQueue = queueOrder.indexOf(currentIndex);
+    if (currentIndexInQueue !== -1 && currentIndexInQueue !== 0) {
+        queueOrder.splice(currentIndexInQueue, 1);
+        queueOrder.unshift(currentIndex);
+    }
+    
+    previousSongIndex = currentIndex;
+    
+    // Atualiza visualmente a fila se estiver aberta
+    if (queuePanel && queuePanel.classList.contains("active")) {
+        updateQueuePanelVisual();
+    }
+}
+
+// NOVA FUNÇÃO: Atualiza visualmente a fila com animações
+function updateQueuePanelVisual() {
+    if (!songListEl) return;
+    
+    // Remove todos os itens atuais
+    const currentItems = Array.from(songListEl.querySelectorAll("li"));
+    
+    // Cria novos itens na ordem correta
+    songListEl.innerHTML = "";
+    
+    queueOrder.forEach((songIndex, position) => {
+        const song = playlist[songIndex];
+        const li = document.createElement("li");
+        
+        li.innerHTML = `
+            <img src="${song.image}" alt="${song.name}" class="song-image">
+            <div class="song-info">
+                <div class="song-title">${song.name}</div>
+                <div class="song-artist">${song.artist}</div>
+            </div>
+        `;
+        
+        li.dataset.index = songIndex;
+        
+        // Adiciona classe da música atual
+        if (songIndex === currentIndex) {
+            li.classList.add("current-song");
+            li.classList.add("song-slide-up"); // Animação de entrada
+        }
+        
+        // Animação para músicas que foram movidas
+        const oldItem = currentItems.find(item => parseInt(item.dataset.index) === songIndex);
+        if (oldItem) {
+            const oldPosition = currentItems.indexOf(oldItem);
+            if (oldPosition > position) {
+                li.classList.add("song-moving-up");
+            } else if (oldPosition < position) {
+                li.classList.add("song-moving-down");
+            }
+        }
+        
+        li.addEventListener("click", () => {
+            if (songIndex !== currentIndex) {
+                changeTrack(songIndex, true);
+            }
+            playAltBlock();
+        });
+        
+        songListEl.appendChild(li);
+    });
+    
+    // Remove classes de animação após a animação terminar
+    setTimeout(() => {
+        const listItems = songListEl.querySelectorAll("li");
+        listItems.forEach(item => {
+            item.classList.remove("song-moving-up", "song-moving-down", "song-slide-up", "song-slide-down");
+        });
+    }, 500);
+    
+    updateQueueScrollbar();
+}
+
+// FUNÇÃO DE ANIMAÇÃO MELHORADA
+function animateQueueChange(oldIndex, newIndex) {
+    if (!songListEl) return;
+    
+    const listItems = songListEl.querySelectorAll("li");
+    
+    // Remove animações anteriores
+    listItems.forEach(item => {
+        item.classList.remove("song-moving-up", "song-moving-down", "song-slide-up", "song-slide-down");
+    });
+    
+    // Encontra os índices na fila
+    const oldIndexInQueue = queueOrder.indexOf(oldIndex);
+    const newIndexInQueue = queueOrder.indexOf(newIndex);
+    
+    // Aplica animações baseadas na mudança de posição
+    listItems.forEach((item, index) => {
+        const songIndex = parseInt(item.dataset.index);
+        
+        if (songIndex === newIndex) {
+            // Nova música atual - animação de slide para cima
+            item.classList.add("song-slide-up");
+        } else if (songIndex === oldIndex) {
+            // Música anterior - animação de slide para baixo
+            item.classList.add("song-slide-down");
+        }
+    });
+}
 
 // ---------------- CATÁLOGO DE GUITARRAS ----------------
 const guitarCatalog = {
@@ -279,29 +622,29 @@ const guitarCatalog = {
         },
         { 
             name: "Stratocaster Vermelha", 
-            src: "guitars/Stratocaster-PHX-Vermelho.png"
+            src: "guitars/Stratocaster/Fender Squier Strato Vermelha.png"
         },
         { 
             name: "Stratocaster Preta", 
             src: "guitars/Stratocaster/cor preta.png"
         },
         { 
-            name: "Stratocaster Branca", 
-            src: "guitars/Stratocaster-PHX-Branca.png"
+            name: "FrankenStrat Van Halen", 
+            src: "guitars/Stratocaster/frankenstrat van halen.png"
         },
         { 
-            name: "Stratocaster Sunburst", 
-            src: "guitars/Stratocaster-PHX-Sunburst.png"
+            name: "Fender American Ultra Strato", 
+            src: "guitars/Stratocaster/Fender American Ultra Strato.png"
         }
     ],
     warlocks: [
         { 
             name: "Warlock Preta", 
-            src: "guitars/Warlock-Preta.png"
+            src: "guitars/Warlock/B.C Rich Warlock Preta.png"
         },
         { 
             name: "Warlock Vermelha", 
-            src: "guitars/Warlock-Vermelha.png"
+            src: "guitars/Warlock/B.C Rich Warlock Vermelha.png"
         },
         { 
             name: "Warlock Azul", 
@@ -330,7 +673,9 @@ function openGuitarCustomizationMenu() {
     
     guitarCustomizationMenu.classList.add("active");
     guitarCustomizationOverlay.classList.add("active");
-    guitarMenuOpen = true;
+    
+    const appState = AppState.getInstance();
+    appState.setMenu('guitar');
     
     // Carrega a primeira categoria por padrão
     loadGuitarCategory('stratocasters');
@@ -348,13 +693,7 @@ function openGuitarCustomizationMenu() {
     
     // Fecha a pesquisa se estiver aberta
     if (searchResults && searchResults.classList.contains("active")) {
-        searchResults.classList.remove("active");
-        if (searchInput) searchInput.value = "";
-        if (searchResults) searchResults.innerHTML = "";
-        currentSearchResults = [];
-        selectedSearchIndex = -1;
-        searchActive = false;
-        toggleShortcuts(true);
+        closeSearchResults();
     }
     
     playAltBlock();
@@ -365,7 +704,10 @@ function closeGuitarCustomizationMenu() {
     
     guitarCustomizationMenu.classList.remove("active");
     guitarCustomizationOverlay.classList.remove("active");
-    guitarMenuOpen = false;
+    
+    const appState = AppState.getInstance();
+    appState.setMenu(null);
+    
     playAltBlock();
 }
 
@@ -406,9 +748,8 @@ function loadGuitarCategory(category) {
             guitarItem.classList.add("selected");
         }
         
-        // Adiciona tratamento de erro para cada imagem
         guitarItem.innerHTML = `
-            <img src="${guitar.src}" alt="${guitar.name}" class="guitar-image" onerror="this.src='guitars/Stratocaster-PHX-Ciano de teteujoga.png'">
+            <img src="${guitar.src}" alt="${guitar.name}" class="guitar-image">
             <div class="guitar-name">${guitar.name}</div>
         `;
         
@@ -441,6 +782,7 @@ function selectGuitar(guitarSrc, category, index) {
     // Força o recarregamento da imagem
     guitarra.onload = function() {
         console.log('Imagem da guitarra carregada com sucesso!');
+        guitarra.setAttribute('loaded', 'true');
     };
     
     guitarra.onerror = function() {
@@ -554,52 +896,55 @@ function setVolumeByPosition(clientX) {
     }
 }
 
+// ---------------- Volume do amplificador CORRIGIDO ----------------
 function increaseVolume() {
-    if (!som || !ampSlider || !ampBar) return;
+    if (!som || !ampSlider || !ampBar) return false;
     
     try {
-        let newVolume = som.volume + 0.05;
-        if (newVolume > 1) newVolume = 1;
-        som.volume = newVolume;
-        
-        const barWidth = ampBar.offsetWidth;
-        const sliderWidth = ampSlider.offsetWidth;
-        ampSlider.style.left = `${som.volume * (barWidth - sliderWidth)}px`;
-        
-        if (!som.paused) updateFire(som.volume);
-        updateVolumePercentage();
-        showVolumePercentage();
-        
-        if (ampToggle && ampControl && ampControl.style.display === "none") {
-            ampControl.style.display = "flex";
+        // VERIFICAÇÃO CORRIGIDA: Só aumenta volume se o amp estiver ligado E a barra visível
+        if (ampToggle && ampControl && ampControl.style.display === "flex") {
+            let newVolume = som.volume + 0.05;
+            if (newVolume > 1) newVolume = 1;
+            som.volume = newVolume;
+            
+            const barWidth = ampBar.offsetWidth;
+            const sliderWidth = ampSlider.offsetWidth;
+            ampSlider.style.left = `${som.volume * (barWidth - sliderWidth)}px`;
+            
+            if (!som.paused) updateFire(som.volume);
+            updateVolumePercentage();
+            showVolumePercentage();
+            return true; // Indica que o volume foi alterado
         }
     } catch (error) {
         console.error('Erro ao aumentar volume:', error);
     }
+    return false; // Indica que o volume NÃO foi alterado
 }
 
 function decreaseVolume() {
-    if (!som || !ampSlider || !ampBar) return;
+    if (!som || !ampSlider || !ampBar) return false;
     
     try {
-        let newVolume = som.volume - 0.05;
-        if (newVolume < 0) newVolume = 0;
-        som.volume = newVolume;
-        
-        const barWidth = ampBar.offsetWidth;
-        const sliderWidth = ampSlider.offsetWidth;
-        ampSlider.style.left = `${som.volume * (barWidth - sliderWidth)}px`;
-        
-        if (!som.paused) updateFire(som.volume);
-        updateVolumePercentage();
-        showVolumePercentage();
-        
-        if (ampToggle && ampControl && ampControl.style.display === "none") {
-            ampControl.style.display = "flex";
+        // VERIFICAÇÃO CORRIGIDA: Só diminui volume se o amp estiver ligado E a barra visível
+        if (ampToggle && ampControl && ampControl.style.display === "flex") {
+            let newVolume = som.volume - 0.05;
+            if (newVolume < 0) newVolume = 0;
+            som.volume = newVolume;
+            
+            const barWidth = ampBar.offsetWidth;
+            const sliderWidth = ampSlider.offsetWidth;
+            ampSlider.style.left = `${som.volume * (barWidth - sliderWidth)}px`;
+            
+            if (!som.paused) updateFire(som.volume);
+            updateVolumePercentage();
+            showVolumePercentage();
+            return true; // Indica que o volume foi alterado
         }
     } catch (error) {
         console.error('Erro ao diminuir volume:', error);
     }
+    return false; // Indica que o volume NÃO foi alterado
 }
 
 // Event listeners seguros para volume
@@ -624,7 +969,13 @@ function toggleAmp() {
     if (ampToggle) {
         if (ampOn) ampOn.style.opacity = "1";
         setTimeout(() => { if (ampOn) ampOn.style.opacity = "0"; }, 300);
-        if (ampControl) ampControl.style.display = "flex";
+        if (ampControl) {
+            ampControl.style.display = "flex";
+            // FORÇA o redesenho para garantir que fique visível
+            ampControl.style.opacity = "1";
+            ampControl.style.visibility = "visible";
+            ampControl.offsetHeight; // Trigger reflow
+        }
         const barWidth = ampBar ? ampBar.offsetWidth : 120;
         const sliderWidth = ampSlider ? ampSlider.offsetWidth : 20;
         if (ampSlider) ampSlider.style.left = `${som.volume * (barWidth - sliderWidth)}px`;
@@ -632,10 +983,15 @@ function toggleAmp() {
     } else {
         if (ampOff) ampOff.style.opacity = "1";
         setTimeout(() => { if (ampOff) ampOff.style.opacity = "0"; }, 300);
-        if (ampControl) ampControl.style.display = "none";
+        if (ampControl) {
+            ampControl.style.display = "none";
+            ampControl.style.opacity = "0";
+            ampControl.style.visibility = "hidden";
+        }
         hideVolumePercentage();
     }
     ampToggle = !ampToggle;
+    console.log("Amp toggle:", ampToggle, "Barra visível:", ampControl ? ampControl.style.display : "null");
 }
 
 safeAddEventListener(amp, "click", toggleAmp);
@@ -697,6 +1053,8 @@ function stopProgressUpdater() {
 
 // ---------------- Play / Pause COM VALIDAÇÃO ----------------
 function togglePlayPause() {
+    const appState = AppState.getInstance();
+    
     if (!som) return;
     
     try {
@@ -710,6 +1068,7 @@ function togglePlayPause() {
             updateFire(som.volume);
             startProgressUpdater();
             updatePlayerStatus("Reproduzindo");
+            appState.isPlaying = true;
         } else {
             som.pause();
             showIcon(pauseIcon);
@@ -717,6 +1076,7 @@ function togglePlayPause() {
             if (fire) fire.style.opacity = "0";
             stopProgressUpdater();
             updatePlayerStatus("Pausado");
+            appState.isPlaying = false;
         }
         updateQueuePanelCurrentSong();
     } catch (error) {
@@ -752,9 +1112,82 @@ safeAddEventListener(som, "ended", () => {
     }
 });
 
-// ---------------- Controle de atalhos ----------------
-function toggleShortcuts(enabled) {
-    shortcutsEnabled = enabled;
+// ---------------- BARRA DE PESQUISA - CORREÇÃO DEFINITIVA ----------------
+
+// CORREÇÃO: A barra de pesquisa SEMPRE fica visível, só os resultados abrem/fecham
+function toggleSearch() {
+    const appState = AppState.getInstance();
+    
+    if (!searchContainer || !searchResults) return;
+    
+    // Se algum menu estiver aberto (exceto search), não faz nada
+    if (appState.currentMenu && appState.currentMenu !== 'search') {
+        return;
+    }
+    
+    const isSearchActive = searchResults.classList.contains("active");
+    
+    if (isSearchActive) {
+        // Se está ativa, fecha apenas os RESULTADOS
+        closeSearchResults();
+    } else {
+        // Se não está ativa, abre os RESULTADOS
+        openSearchResults();
+    }
+    
+    console.log('Search results toggled - Active:', !isSearchActive);
+}
+
+// CORREÇÃO: Abre apenas os resultados (barra já está sempre visível)
+function openSearchResults() {
+    if (searchResults) {
+        searchResults.classList.add('active');
+        // Mostra TODAS as músicas quando abre a pesquisa
+        currentSearchResults = [...playlist];
+        displaySearchResults(currentSearchResults);
+    }
+    if (searchInput) {
+        searchInput.focus();
+        searchInput.value = ""; // Limpa o texto anterior
+    }
+    
+    searchActive = true;
+    
+    const appState = AppState.getInstance();
+    appState.setMenu('search');
+}
+
+// CORREÇÃO: Fecha apenas os resultados (barra permanece visível)
+function closeSearchResults() {
+    if (searchResults) {
+        searchResults.classList.remove("active");
+        searchResults.innerHTML = ''; // Limpa resultados
+    }
+    
+    if (searchInput) {
+        searchInput.blur();
+        // CORREÇÃO: Não limpa o texto - mantém o que usuário digitou
+        // searchInput.value = ""; // REMOVIDO
+    }
+    
+    currentSearchResults = [];
+    selectedSearchIndex = -1;
+    searchActive = false;
+    
+    const appState = AppState.getInstance();
+    appState.setMenu(null);
+    
+    console.log('Search results closed - barra permanece visível');
+}
+
+// CORREÇÃO: Quando clica em uma música, fecha apenas os resultados
+function handleSearchResultClick(song) {
+    const songIndex = playlist.findIndex(s => s.src === song.src);
+    if (songIndex !== -1) {
+        changeTrack(songIndex, true);
+        closeSearchResults(); // CORREÇÃO: Só fecha resultados, não a barra
+    }
+    playAltBlock();
 }
 
 // ---------------- Barra de Pesquisa COM DEBOUNCE MELHORADO ----------------
@@ -827,7 +1260,6 @@ function displaySearchResults(results) {
             resultItem.classList.add('selected');
         }
         
-        // Usando template string sem onerror - o fallback é tratado pelo setupImageErrorHandling
         resultItem.innerHTML = `
             <img src="${song.image}" alt="${song.name}" class="search-result-image">
             <div class="search-result-info">
@@ -837,15 +1269,7 @@ function displaySearchResults(results) {
         `;
 
         resultItem.addEventListener('click', () => {
-            const songIndex = playlist.findIndex(s => s.src === song.src);
-            if (songIndex !== -1) {
-                changeTrack(songIndex, true);
-                if (searchResults) searchResults.classList.remove('active');
-                if (searchInput) searchInput.value = '';
-                currentSearchResults = [];
-                selectedSearchIndex = -1;
-            }
-            playAltBlock();
+            handleSearchResultClick(song);
         });
 
         searchResults.appendChild(resultItem);
@@ -870,40 +1294,21 @@ function playSelectedSearchItem() {
         const songIndex = playlist.findIndex(s => s.src === song.src);
         if (songIndex !== -1) {
             changeTrack(songIndex, true);
-            if (searchResults) searchResults.classList.remove('active');
-            if (searchInput) searchInput.value = '';
-            currentSearchResults = [];
-            selectedSearchIndex = -1;
+            closeSearchResults();
             playAltBlock();
         }
     }
 }
 
-// Função para abrir/fechar barra de pesquisa
-function toggleSearch() {
-    if (!searchContainer) return;
-    
-    if (searchContainer.style.display === 'none' || searchContainer.style.display === '') {
-        searchContainer.style.display = 'block';
-        if (searchInput) searchInput.focus();
-        if (searchResults) searchResults.classList.add('active');
-        searchActive = true;
-        toggleShortcuts(false);
-    } else {
-        searchContainer.style.display = 'none';
-        if (searchResults) searchResults.classList.remove('active');
-        if (searchInput) searchInput.value = '';
-        currentSearchResults = [];
-        selectedSearchIndex = -1;
-        searchActive = false;
-        toggleShortcuts(true);
-    }
-}
-
 // Event listeners para a barra de pesquisa
 safeAddEventListener(searchInput, 'focus', () => {
+    const appState = AppState.getInstance();
+    if (appState.currentMenu) {
+        searchInput.blur();
+        return;
+    }
     searchActive = true;
-    toggleShortcuts(false);
+    appState.setMenu('search');
     if (searchResults) searchResults.classList.add('active');
 });
 
@@ -911,19 +1316,32 @@ safeAddEventListener(searchInput, 'blur', () => {
     setTimeout(() => {
         if (searchInput && !searchInput.matches(':focus') && searchResults && !searchResults.matches(':hover')) {
             searchActive = false;
-            toggleShortcuts(true);
         }
     }, 100);
 });
 
+// CORREÇÃO: Event listener para input da pesquisa
 safeAddEventListener(searchInput, 'input', (e) => {
+    const appState = AppState.getInstance();
+    if (appState.currentMenu && appState.currentMenu !== 'search') return;
+    
     const query = e.target.value;
+    
+    // Se campo vazio, mostra todas as músicas
+    if (!query.trim()) {
+        currentSearchResults = [...playlist];
+        displaySearchResults(currentSearchResults);
+        return;
+    }
+    
+    // Se tem texto, faz a pesquisa
     debouncedSearch(query);
 });
 
 // Event listener para teclas na pesquisa
 safeAddEventListener(searchInput, 'keydown', (e) => {
-    if (!searchResults || !searchResults.classList.contains('active')) return;
+    const appState = AppState.getInstance();
+    if (!searchResults || !searchResults.classList.contains("active") || appState.currentMenu) return;
     
     switch(e.key) {
         case 'ArrowDown':
@@ -954,23 +1372,20 @@ safeAddEventListener(searchInput, 'keydown', (e) => {
             
         case 'Escape':
             e.preventDefault();
-            if (searchResults) searchResults.classList.remove('active');
-            if (searchInput) searchInput.value = '';
-            currentSearchResults = [];
-            selectedSearchIndex = -1;
-            if (searchInput) searchInput.blur();
-            searchActive = false;
-            toggleShortcuts(true);
+            closeSearchResults();
             return;
     }
 });
 
-// Fechar pesquisa ao clicar fora
+// CORREÇÃO: No clique fora, só fecha resultados
 document.addEventListener('click', (e) => {
-    if (searchContainer && !searchContainer.contains(e.target) && !e.target.closest('#search-results')) {
-        if (searchResults) searchResults.classList.remove('active');
-        currentSearchResults = [];
-        selectedSearchIndex = -1;
+    if (searchContainer && 
+        !searchContainer.contains(e.target) && 
+        !e.target.closest('#search-results') &&
+        searchResults && 
+        searchResults.classList.contains("active")) {
+        
+        closeSearchResults(); // CORREÇÃO: Só fecha resultados
     }
 });
 
@@ -1021,6 +1436,10 @@ function abrirMenuSite() {
     
     settingsMenu.classList.add("active");
     settingsOverlay.classList.add("active");
+    
+    const appState = AppState.getInstance();
+    appState.setMenu('settings');
+    
     showMainMenu();
     playMenuSound();
     
@@ -1032,17 +1451,11 @@ function abrirMenuSite() {
     
     // Fecha a pesquisa se estiver aberta
     if (searchResults && searchResults.classList.contains("active")) {
-        searchResults.classList.remove("active");
-        if (searchInput) searchInput.value = "";
-        if (searchResults) searchResults.innerHTML = "";
-        currentSearchResults = [];
-        selectedSearchIndex = -1;
-        searchActive = false;
-        toggleShortcuts(true);
+        closeSearchResults();
     }
     
     // Fecha o menu de customização se estiver aberto
-    if (guitarMenuOpen) {
+    if (guitarCustomizationMenu && guitarCustomizationMenu.classList.contains("active")) {
         closeGuitarCustomizationMenu();
     }
     
@@ -1055,6 +1468,10 @@ function fecharMenuSite() {
     
     settingsMenu.classList.remove("active");
     settingsOverlay.classList.remove("active");
+    
+    const appState = AppState.getInstance();
+    appState.setMenu(null);
+    
     hideAllSubmenus();
     currentMenu = 'main';
     selectedMenuIndex = -1;
@@ -1113,7 +1530,9 @@ function clickAnimation(el) {
 function updateMenuSelection() {
     const menuItems = document.querySelectorAll('.menu-item');
     menuItems.forEach((item, index) => {
+        item.classList.remove("selected");
         if (index === selectedMenuIndex) {
+            item.classList.add("selected");
             item.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
             item.style.borderColor = 'rgba(255, 255, 255, 0.5)';
         } else {
@@ -1123,30 +1542,30 @@ function updateMenuSelection() {
     });
 }
 
-// Navegação no menu com teclado
+// Navegação no menu com teclado - CORREÇÃO DAS SETAS
 function handleMenuNavigation(e) {
     if (!settingsMenu || !settingsMenu.classList.contains("active")) return;
     
     const menuItems = document.querySelectorAll('.menu-item');
     if (menuItems.length === 0) return;
     
-    e.preventDefault();
-    
     if (e.key === 'ArrowDown') {
+        e.preventDefault();
         selectedMenuIndex = (selectedMenuIndex + 1) % menuItems.length;
         updateMenuSelection();
     } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
         selectedMenuIndex = (selectedMenuIndex - 1 + menuItems.length) % menuItems.length;
         updateMenuSelection();
     } else if (e.key === 'Enter' && selectedMenuIndex >= 0) {
-        if (selectedMenuIndex === 0) {
-            clickAnimation(shortcutsBtn);
-            playAltBlock();
+        e.preventDefault();
+        const selectedItem = menuItems[selectedMenuIndex];
+        if (selectedItem.id === 'shortcuts-btn') {
             showShortcutsMenu();
-        } else if (selectedMenuIndex === 1) {
-            clickAnimation(creditsBtn);
             playAltBlock();
+        } else if (selectedItem.id === 'credits-btn') {
             showCreditsMenu();
+            playAltBlock();
         }
     }
 }
@@ -1160,6 +1579,7 @@ safeAddEventListener(contrastBtn, "click", () => {
 });
 
 safeAddEventListener(settingsToggle, "click", () => {
+    const appState = AppState.getInstance();
     if (settingsMenu && settingsMenu.classList.contains("active")) {
         fecharMenuSite();
     } else {
@@ -1204,7 +1624,8 @@ safeAddEventListener(backCreditsBtn, "click", () => {
 // NOVO: Event listeners para o menu de customização de guitarra
 safeAddEventListener(brushToggle, "click", () => {
     console.log('Botão do pincel clicado');
-    if (guitarMenuOpen) {
+    const appState = AppState.getInstance();
+    if (guitarCustomizationMenu && guitarCustomizationMenu.classList.contains("active")) {
         closeGuitarCustomizationMenu();
     } else {
         openGuitarCustomizationMenu();
@@ -1230,24 +1651,20 @@ categoryTabs.forEach(tab => {
     });
 });
 
-// Navegação com ESC - CORREÇÃO: Não abre menu quando ESC é pressionado na pesquisa
+// Navegação com ESC - CORREÇÃO: No ESC também só fecha resultados
 document.addEventListener("keydown", (e) => {
+    const appState = AppState.getInstance();
+    
     if (e.key === "Escape") {
-        // Se a pesquisa está ativa, apenas fecha a pesquisa
+        // Se a pesquisa está ativa, fecha apenas os RESULTADOS
         if (searchActive || (searchResults && searchResults.classList.contains("active"))) {
-            if (searchResults) searchResults.classList.remove('active');
-            if (searchInput) searchInput.value = '';
-            currentSearchResults = [];
-            selectedSearchIndex = -1;
-            if (searchInput) searchInput.blur();
-            searchActive = false;
-            toggleShortcuts(true);
+            closeSearchResults(); // CORREÇÃO: Só fecha resultados
             e.preventDefault();
             return;
         }
         
         // Se o menu de customização está aberto, fecha ele
-        if (guitarMenuOpen) {
+        if (guitarCustomizationMenu && guitarCustomizationMenu.classList.contains("active")) {
             closeGuitarCustomizationMenu();
             e.preventDefault();
             return;
@@ -1260,12 +1677,15 @@ document.addEventListener("keydown", (e) => {
                 showMainMenu();
                 playAltBlock();
             }
+            e.preventDefault();
         } else if (queuePanel && queuePanel.classList.contains("active")) {
             queuePanel.classList.remove("active");
             updateQueueButtonShadow();
             playAltBlock();
-        } else {
+            e.preventDefault();
+        } else if (!appState.currentMenu) {
             abrirMenuSite();
+            e.preventDefault();
         }
     }
 });
@@ -1281,6 +1701,8 @@ function changeTrack(index, autoPlay = true) {
         console.error('Índice de música inválido:', index);
         return;
     }
+    
+    const oldIndex = currentIndex;
     
     try {
         currentIndex = ((index % playlist.length) + playlist.length) % playlist.length;
@@ -1308,8 +1730,18 @@ function changeTrack(index, autoPlay = true) {
             startProgressUpdater();
         }
 
+        // ATUALIZAÇÃO CRÍTICA: Atualiza a ordem da fila ANTES das animações
+        updateQueueOrder();
+        
+        // Animação da mudança de música
+        animateQueueChange(oldIndex, currentIndex);
+        
         updatePlayerStatus("Carregando");
-        updateQueuePanelCurrentSong();
+        
+        // Força atualização visual da fila se estiver aberta
+        if (queuePanel && queuePanel.classList.contains("active")) {
+            updateQueuePanelVisual();
+        }
     } catch (error) {
         console.error('Erro ao trocar faixa:', error);
         AudioErrorHandler.handleAudioError(som);
@@ -1356,47 +1788,37 @@ function updateQueueButtonShadow() {
 
 // Função para abrir/fechar painel da fila
 function toggleQueuePanel() {
+    const appState = AppState.getInstance();
+    
     if (!queuePanel) return;
     
-    queuePanel.classList.toggle("active");
-    updateQueueButtonShadow();
     if (queuePanel.classList.contains("active")) {
-        populateQueuePanel();
+        queuePanel.classList.remove("active");
+        appState.setMenu(null);
+    } else {
+        queuePanel.classList.add("active");
+        appState.setMenu('queue');
+        updateQueuePanelVisual();
         selectedQueueIndex = currentIndex;
         updateQueueSelection();
-    } else {
-        selectedQueueIndex = -1;
     }
+    
+    updateQueueButtonShadow();
 }
 
-// NOVA FUNÇÃO: Popula o painel da fila com tratamento de erro de imagem
-function populateQueuePanel() {
+// NOVA FUNÇÃO: Atualizar seleção na fila
+function updateQueueSelection() {
     if (!songListEl) return;
     
-    songListEl.innerHTML = "";
-    playlist.forEach((song, index) => {
-        const li = document.createElement("li");
-        
-        // Sem onerror - o fallback é tratado pelo setupImageErrorHandling
-        li.innerHTML = `
-            <img src="${song.image}" alt="${song.name}" class="song-image">
-            <div class="song-info">
-                <div class="song-title">${song.name}</div>
-                <div class="song-artist">${song.artist}</div>
-            </div>
-        `;
-        
-        li.dataset.index = index;
-        li.addEventListener("click", () => {
-            if (index !== currentIndex) {
-                changeTrack(index, true);
-            }
-            playAltBlock();
-        });
-        songListEl.appendChild(li);
+    const listItems = songListEl.querySelectorAll("li");
+    listItems.forEach((item, index) => {
+        item.classList.remove("selected");
+        const songIndex = parseInt(item.dataset.index);
+        if (songIndex === selectedQueueIndex) {
+            item.classList.add("selected");
+            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     });
-    updateQueuePanelCurrentSong();
-    updateQueueScrollbar();
 }
 
 function updateQueuePanelCurrentSong() {
@@ -1404,9 +1826,13 @@ function updateQueuePanelCurrentSong() {
     
     const listItems = songListEl.querySelectorAll("li");
     listItems.forEach((item, index) => {
-        if (index === currentIndex) {
+        const songIndex = parseInt(item.dataset.index);
+        if (songIndex === currentIndex) {
             item.classList.add("current-song");
-            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // Garante que a música atual esteja sempre visível quando a fila está aberta
+            if (queuePanel.classList.contains("active")) {
+                item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
         } else {
             item.classList.remove("current-song");
         }
@@ -1482,20 +1908,6 @@ safeAddEventListener(queueBtn, "click", () => {
     toggleQueuePanel();
 });
 
-// NOVA FUNÇÃO: Atualizar seleção na fila
-function updateQueueSelection() {
-    if (!songListEl) return;
-    
-    const listItems = songListEl.querySelectorAll("li");
-    listItems.forEach((item, index) => {
-        item.classList.remove("selected");
-        if (index === selectedQueueIndex) {
-            item.classList.add("selected");
-            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-    });
-}
-
 // NOVA FUNÇÃO: Navegação na fila com teclado
 function handleQueueNavigation(e) {
     if (!queuePanel || !queuePanel.classList.contains("active")) return;
@@ -1506,9 +1918,13 @@ function handleQueueNavigation(e) {
     e.preventDefault();
     
     if (e.key === 'ArrowDown') {
-        selectedQueueIndex = (selectedQueueIndex + 1) % listItems.length;
+        const currentIndexInQueue = queueOrder.indexOf(selectedQueueIndex);
+        const nextIndex = (currentIndexInQueue + 1) % queueOrder.length;
+        selectedQueueIndex = queueOrder[nextIndex];
     } else if (e.key === 'ArrowUp') {
-        selectedQueueIndex = (selectedQueueIndex - 1 + listItems.length) % listItems.length;
+        const currentIndexInQueue = queueOrder.indexOf(selectedQueueIndex);
+        const prevIndex = (currentIndexInQueue - 1 + queueOrder.length) % queueOrder.length;
+        selectedQueueIndex = queueOrder[prevIndex];
     }
     
     updateQueueSelection();
@@ -1524,28 +1940,14 @@ function playSelectedQueueItem() {
 
 // ---------------- Novos atalhos do teclado COM VALIDAÇÃO ----------------
 document.addEventListener("keydown", (e) => {
-    // Se o menu de customização estiver aberto, permite fechar com ESC
-    if (guitarMenuOpen) {
+    const appState = AppState.getInstance();
+    
+    // Se qualquer menu estiver aberto, bloqueia a maioria dos atalhos
+    if (appState.currentMenu) {
+        // Permite apenas ESC para fechar menus
         if (e.key === 'Escape') {
-            closeGuitarCustomizationMenu();
+            closeActiveModal();
             e.preventDefault();
-        }
-        return;
-    }
-
-    // Se o menu estiver aberto, permite navegação com setas
-    if (settingsMenu && settingsMenu.classList.contains("active")) {
-        if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
-            handleMenuNavigation(e);
-            return;
-        }
-        
-        if ((e.ctrlKey && e.key === '.') || e.key === 'Escape') {
-            if (e.ctrlKey && e.key === '.') {
-                e.preventDefault();
-                document.body.classList.toggle("light-mode");
-                updateQueueButtonShadow();
-            }
         }
         return;
     }
@@ -1560,10 +1962,32 @@ document.addEventListener("keydown", (e) => {
     }
 
     // Se atalhos estão desativados, não executa
-    if (!shortcutsEnabled) return;
+    if (!appState.shortcutsEnabled) return;
 
-    // Ctrl + K - Abrir/fechar pesquisa
-    if (e.ctrlKey && e.key === 'k') {
+    // CORREÇÃO CRÍTICA: Setas para volume - SÓ funcionam se a barra estiver visível
+    if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        // VERIFICA se a barra de volume está visível
+        if (ampControl && ampControl.style.display === "flex" && ampToggle) {
+            e.preventDefault();
+            
+            if (e.key === 'ArrowUp') {
+                // Tenta aumentar volume e toca efeito apenas se a barra estiver visível
+                if (increaseVolume()) {
+                    playAltBlock();
+                }
+            } else if (e.key === 'ArrowDown') {
+                // Tenta diminuir volume e toca efeito apenas se a barra estiver visível
+                if (decreaseVolume()) {
+                    playAltBlock();
+                }
+            }
+            return;
+        }
+        // Se a barra não está visível, permite que outras funcionalidades usem as setas
+    }
+
+    // Ctrl + K - Abrir/fechar pesquisa (SÓ FUNCIONA SE NENHUM MENU ESTIVER ABERTO)
+    if (e.ctrlKey && e.key === 'k' && !appState.currentMenu) {
         e.preventDefault();
         toggleSearch();
         return;
@@ -1639,25 +2063,6 @@ document.addEventListener("keydown", (e) => {
         return;
     }
 
-    // NOVO COMPORTAMENTO: Setas para volume SÓ funcionam se a barra estiver aberta
-    if (e.key === 'ArrowUp' && !e.ctrlKey && !e.altKey && !e.metaKey) {
-        e.preventDefault();
-        // Só aumenta volume se o amp estiver ligado E a barra de volume visível
-        if (ampToggle && ampControl && ampControl.style.display === "flex") {
-            increaseVolume();
-        }
-        return;
-    }
-
-    if (e.key === 'ArrowDown' && !e.ctrlKey && !e.altKey && !e.metaKey) {
-        e.preventDefault();
-        // Só diminui volume se o amp estiver ligado E a barra de volume visível
-        if (ampToggle && ampControl && ampControl.style.display === "flex") {
-            decreaseVolume();
-        }
-        return;
-    }
-
     // Navegação na fila com setas
     if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && queuePanel && queuePanel.classList.contains("active")) {
         handleQueueNavigation(e);
@@ -1672,7 +2077,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     // Atalhos originais
-    if (shortcutsEnabled) {
+    if (appState.shortcutsEnabled) {
         // Barra de espaço - Play/Pause
         if (e.code === "Space") {
             e.preventDefault();
@@ -1703,84 +2108,128 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-// ---------------- Inicialização COM VALIDAÇÃO ----------------
+// ---------------- INICIALIZAÇÃO MELHORADA ----------------
 window.addEventListener("load", () => {
-    // Inicializa o handler de erros de áudio
-    AudioErrorHandler.init(som);
+    const appState = AppState.getInstance();
+    appState.audio = som; // Conecta o áudio ao estado global
     
-    // Configura fallback de imagens
-    setupImageErrorHandling();
-    
-    // Pré-carregamento de imagens para melhor performance
-    const imagesToPreload = [
-        'img/guitar logo.png',
-        'img/contraste.png',
-        'img/engrenagem.png',
-        'img/pincel.png',
-        'img/back.png',
-        'img/skip.png',
-        'img/loop.png',
-        'img/filademusica.png',
-        'img/play.png',
-        'img/pause.png',
-        'img/ligado.png',
-        'img/desligado.png',
-        'img/chamas.gif',
-        'img/x.png'
-    ];
-    
-    // Pré-carregar imagens de guitarras
-    Object.values(guitarCatalog).forEach(category => {
-        category.forEach(guitar => {
-            imagesToPreload.push(guitar.src);
-        });
-    });
-    
-    imagesToPreload.forEach(src => {
-        const img = new Image();
-        img.src = src;
-    });
-    
-    // Pré-carregamento de áudio
-    const audioToPreload = [
-        'effects/abrirmenu.mp3',
-        'effects/fecharmenu.mp3',
-        'effects/block 1.mp3',
-        'effects/block 2.mp3'
-    ];
-    
-    audioToPreload.forEach(src => {
-        const audio = new Audio();
-        audio.src = src;
-    });
-    
-    if (som) som.volume = 0.5;
-    if (ampBar && ampSlider) {
-        const barWidth = ampBar.offsetWidth;
-        const sliderWidth = ampSlider.offsetWidth;
-        ampSlider.style.left = `${som.volume * (barWidth - sliderWidth)}px`;
+    // Inicialização segura
+    try {
+        // Handler de erros
+        AudioErrorHandler.init(som);
+        setupImageErrorHandling();
+        
+        // Focus trap para acessibilidade
+        initFocusTrap();
+        
+        // Pré-carregamento inteligente
+        intelligentPreload();
+        
+        // CORREÇÃO: Configuração inicial do player com carregamento forçado
+        if (som) {
+            som.volume = appState.volume;
+            som.src = playlist[appState.currentTrack].src;
+            
+            // FORÇAR o carregamento dos metadados
+            som.load();
+            
+            // CORREÇÃO: Aguardar metadados carregarem antes de mostrar duração
+            const waitForMetadata = () => {
+                if (som.duration && som.duration !== Infinity) {
+                    // Metadados carregados - atualizar UI
+                    if (totalTimeEl) totalTimeEl.textContent = formatTime(som.duration);
+                    updateProgress();
+                    som.removeEventListener('loadedmetadata', waitForMetadata);
+                } else {
+                    // Tentar novamente em 100ms se ainda não carregou
+                    setTimeout(waitForMetadata, 100);
+                }
+            };
+            
+            som.addEventListener('loadedmetadata', waitForMetadata);
+            
+            // Fallback: tentar carregar mesmo se evento não disparar
+            setTimeout(() => {
+                if (totalTimeEl && totalTimeEl.textContent === '0:00' && som.duration) {
+                    totalTimeEl.textContent = formatTime(som.duration);
+                }
+            }, 1000);
+        }
+        
+        // Configuração inicial da UI
+        updateQueueOrder();
+        updateQueuePanelVisual();
+        updateQueueButtonShadow();
+        updateVolumePercentage();
+        
+        // CORREÇÃO: Garantir que a barra esteja SEMPRE visível na inicialização
+        if (searchContainer) {
+            searchContainer.style.display = 'block'; // SEMPRE visível
+        }
+        
+        console.log('GuitarSound inicializado com sucesso!');
+        
+    } catch (error) {
+        console.error('Erro na inicialização:', error);
+        AudioErrorHandler.showError('Erro ao inicializar o player');
     }
-
-    // Define a primeira música e carrega metadados
-    if (som && playlist.length > 0) {
-        som.src = playlist[currentIndex].src;
-        som.load();
-
-        const loadedMetadataHandler = () => {
-            if (totalTimeEl) totalTimeEl.textContent = formatTime(som.duration);
-            updateProgress();
-        };
-
-        som.addEventListener("loadedmetadata", loadedMetadataHandler, { once: true });
-    }
-
-    populateQueuePanel();
-    updateQueueButtonShadow();
-    updateVolumePercentage();
-    
-    // Atualiza status inicial
-    updatePlayerStatus("Pronto");
 });
+
+// ========== PROTEÇÃO CONTRA CLIQUE DIREITO E SELEÇÃO ==========
+
+// Bloquear menu de contexto (clique direito) em todo o site
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+// Bloquear arrastar imagens
+document.addEventListener('dragstart', function(e) {
+    if (e.target.tagName === 'IMG') {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Bloquear seleção via teclado (Ctrl+A, etc) exceto na pesquisa
+document.addEventListener('keydown', function(e) {
+    // Permitir Ctrl+A apenas na barra de pesquisa
+    if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        const activeElement = document.activeElement;
+        if (activeElement !== searchInput) {
+            e.preventDefault();
+            return false;
+        }
+    }
+    
+    // Bloquear outros atalhos de seleção
+    if (e.key === 'F1' || (e.ctrlKey && e.key === 'u')) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Proteção adicional contra inspetor (F12)
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12' || 
+        (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+        (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+        (e.ctrlKey && e.key === 'u')) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Bloquear seleção via CSS também (reforço)
+document.addEventListener('selectstart', function(e) {
+    if (e.target !== searchInput && !e.target.isContentEditable) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Mensagem opcional no console (pode remover se quiser)
+console.log('🎸 GuitarSound protegido contra seleção e clique direito');
 
 // Cleanup para evitar memory leaks
 window.addEventListener('beforeunload', () => {
