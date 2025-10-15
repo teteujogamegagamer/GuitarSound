@@ -1,3 +1,30 @@
+/* === VARIÁVEIS CSS PARA MELHOR MANUTENÇÃO === */
+:root {
+  /* Cores */
+  --primary-color: lime;
+  --primary-dark: #00a800;
+  --bg-dark: rgb(47, 45, 45);
+  --bg-dark-transparent: rgba(75, 73, 73, 0.95);
+  --bg-light: #f8f9fa;
+  --bg-light-transparent: rgba(240, 240, 240, 0.95);
+  --text-dark: #222;
+  --text-light: white;
+  
+  /* Transições */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.4s ease-out;
+  
+  /* Sombras */
+  --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+  --shadow-medium: 0 4px 15px rgba(0,0,0,0.5);
+  --shadow-heavy: 0 10px 25px rgba(0,0,0,0.7);
+  
+  /* Bordas */
+  --border-radius: 8px;
+  --border-radius-large: 15px;
+}
+
 /* === ESTILOS DO MENU DE CUSTOMIZAÇÃO DE GUITARRA === */
 
 #guitar-customization-overlay {
@@ -10,7 +37,7 @@
   z-index: 9997;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-normal);
 }
 
 #guitar-customization-overlay.active {
@@ -25,23 +52,23 @@
   width: 80%;
   max-width: 500px;
   height: 100%;
-  background: rgba(75, 73, 73, 0.95);
+  background: var(--bg-dark-transparent);
   box-shadow: -5px 0 30px rgba(0,0,0,0.7);
-  z-index: 9998;
+  z-index: 10000;
   opacity: 0;
   pointer-events: none;
-  transition: all 0.4s ease-out;
+  transition: all var(--transition-slow);
   overflow: hidden;
   padding: 0;
   font-family: "Tiny5", sans-serif;
-  color: white;
+  color: var(--text-light);
   display: flex;
   flex-direction: column;
 }
 
 body.light-mode #guitar-customization-menu {
-  background: rgba(240, 240, 240, 0.95);
-  color: #222;
+  background: var(--bg-light-transparent);
+  color: var(--text-dark);
   box-shadow: -5px 0 30px rgba(0,0,0,0.4);
 }
 
@@ -51,6 +78,33 @@ body.light-mode #guitar-customization-menu {
   right: 0;
 }
 
+/* CORREÇÃO DO Z-INDEX - ÍCONES SOBRE O MENU DE GUITARRA */
+#guitar-customization-menu.active {
+  z-index: 10000 !important;
+}
+
+#guitar-customization-overlay.active {
+  z-index: 9999 !important;
+}
+
+/* CORREÇÃO CRÍTICA: Ícones ficam acima mas desabilitados quando menu de guitarra está aberto */
+#guitar-customization-menu.active ~ #contrast-toggle,
+#guitar-customization-menu.active ~ #settings-toggle,
+#guitar-customization-menu.active ~ .guitar-container #brush-toggle {
+  z-index: 10001 !important;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Garantir que o menu de guitarra tenha prioridade máxima */
+#guitar-customization-menu {
+  z-index: 10000 !important;
+}
+
+#guitar-customization-overlay {
+  z-index: 9999 !important;
+}
+
 #close-guitar-menu {
   position: absolute;
   top: 15px;
@@ -58,7 +112,7 @@ body.light-mode #guitar-customization-menu {
   width: 40px;
   height: auto;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: transform var(--transition-fast);
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
   z-index: 10000;
 }
@@ -98,20 +152,20 @@ body.light-mode .category-tabs {
 .category-tab {
   background: rgba(255, 255, 255, 0.1);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   padding: 10px 15px;
-  color: white;
+  color: var(--text-light);
   font-family: "Tiny5", sans-serif;
   font-size: clamp(0.9rem, 1.1vw, 1.1rem);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   flex: 1;
   text-align: center;
 }
 
 body.light-mode .category-tab {
   background: rgba(0, 0, 0, 0.08);
-  color: #222;
+  color: var(--text-dark);
 }
 
 .category-tab:hover {
@@ -124,12 +178,12 @@ body.light-mode .category-tab:hover {
 
 .category-tab.active {
   background: rgba(0, 255, 0, 0.3);
-  color: lime;
+  color: var(--primary-color);
 }
 
 body.light-mode .category-tab.active {
   background: rgba(0, 255, 0, 0.2);
-  color: #00a800;
+  color: var(--primary-dark);
 }
 
 .guitar-grid {
@@ -146,7 +200,7 @@ body.light-mode .category-tab.active {
   border-radius: 10px;
   padding: 10px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -160,7 +214,7 @@ body.light-mode .guitar-item {
 .guitar-item:hover {
   transform: translateY(-5px);
   background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-medium);
 }
 
 body.light-mode .guitar-item:hover {
@@ -168,13 +222,13 @@ body.light-mode .guitar-item:hover {
 }
 
 .guitar-item.selected {
-  border-color: lime;
+  border-color: var(--primary-color);
   background: rgba(0, 255, 0, 0.15);
   transform: scale(1.05);
 }
 
 body.light-mode .guitar-item.selected {
-  border-color: #00a800;
+  border-color: var(--primary-dark);
   background: rgba(0, 255, 0, 0.1);
 }
 
@@ -184,6 +238,32 @@ body.light-mode .guitar-item.selected {
   object-fit: contain;
   margin-bottom: 8px;
   border-radius: 5px;
+}
+
+/* MELHORIA: Estados de loading para imagens */
+.guitar-image:not([loaded]),
+.song-image:not([loaded]),
+.search-result-image:not([loaded]) {
+  background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, 
+                                    rgba(255,255,255,0.2) 50%, 
+                                    rgba(255,255,255,0.1) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 5px;
+}
+
+body.light-mode .guitar-image:not([loaded]),
+body.light-mode .song-image:not([loaded]),
+body.light-mode .search-result-image:not([loaded]) {
+  background: linear-gradient(90deg, rgba(0,0,0,0.05) 25%, 
+                                    rgba(0,0,0,0.1) 50%, 
+                                    rgba(0,0,0,0.05) 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .guitar-name {
@@ -245,7 +325,7 @@ body.light-mode .guitar-grid::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 12px 20px;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   font-family: "Tiny5", sans-serif;
   z-index: 10000;
   display: none;
@@ -258,7 +338,7 @@ body.light-mode .guitar-grid::-webkit-scrollbar-thumb:hover {
 
 /* Melhorar foco para acessibilidade */
 :focus {
-  outline: 2px solid lime;
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
@@ -280,10 +360,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgb(47, 45, 45);
+  background-color: var(--bg-dark);
   overflow-x: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  color: white;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+  color: var(--text-light);
   font-family: "Tiny5", sans-serif;
   transform-origin: 0 0;
 }
@@ -297,17 +377,27 @@ body {
   transform-origin: center center;
 }
 
-/* Barra de pesquisa */
+/* Barra de pesquisa - POSIÇÃO FIXA E TAMANHO FIXO */
 #search-container {
   position: fixed;
   top: 2vh;
   left: 50%;
   transform: translateX(-50%);
-  width: 40%;
+  width: 500px;
   max-width: 500px;
   min-width: 300px;
   z-index: 20000;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
+}
+
+#search-container.menu-open {
+  z-index: 1;
+  pointer-events: none;
+}
+
+#search-container.menu-open #search-bar {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 #search-bar {
@@ -315,23 +405,23 @@ body {
   width: 100%;
   display: flex;
   align-items: center;
-  background: rgba(75, 73, 73, 0.9);
+  background: var(--bg-dark-transparent);
   border-radius: 25px;
   padding: 10px 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-  transition: all 0.3s ease;
+  box-shadow: var(--shadow-medium);
+  transition: all var(--transition-normal);
   border: 2px solid transparent;
 }
 
 #search-bar:focus-within {
   background: rgba(90, 88, 88, 0.95);
   border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+  box-shadow: var(--shadow-heavy);
 }
 
 body.light-mode #search-bar {
   background: rgba(230, 230, 230, 0.9);
-  color: #222; /* Melhor contraste */
+  color: var(--text-dark);
 }
 
 body.light-mode #search-bar:focus-within {
@@ -344,14 +434,14 @@ body.light-mode #search-bar:focus-within {
   background: transparent;
   border: none;
   outline: none;
-  color: white;
+  color: var(--text-light);
   font-family: "Tiny5", sans-serif;
-  font-size: clamp(14px, 1.2vw, 16px);
+  font-size: 16px;
   padding: 0 10px;
 }
 
 body.light-mode #search-input {
-  color: #222; /* Melhor contraste */
+  color: var(--text-dark);
 }
 
 #search-input::placeholder {
@@ -365,7 +455,7 @@ body.light-mode #search-input::placeholder {
 #search-icon {
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
-  transition: color 0.3s ease;
+  transition: color var(--transition-normal);
 }
 
 body.light-mode #search-icon {
@@ -373,11 +463,11 @@ body.light-mode #search-icon {
 }
 
 #search-icon:hover {
-  color: white;
+  color: var(--text-light);
 }
 
 body.light-mode #search-icon:hover {
-  color: black;
+  color: var(--text-dark);
 }
 
 #search-results {
@@ -388,16 +478,16 @@ body.light-mode #search-icon:hover {
   max-height: 400px;
   overflow-y: auto;
   background: rgba(50, 50, 50, 0.95);
-  border-radius: 0 0 15px 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+  border-radius: 0 0 var(--border-radius-large) var(--border-radius-large);
+  box-shadow: var(--shadow-heavy);
   display: none;
   z-index: 20001;
   margin-top: 5px;
 }
 
 body.light-mode #search-results {
-  background: rgba(240, 240, 240, 0.95);
-  color: #222; /* Melhor contraste */
+  background: var(--bg-light-transparent);
+  color: var(--text-dark);
 }
 
 #search-results.active {
@@ -410,7 +500,7 @@ body.light-mode #search-results {
   padding: 12px 15px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background var(--transition-normal);
 }
 
 body.light-mode .search-result-item {
@@ -443,7 +533,7 @@ body.light-mode .search-result-item.selected {
   border-radius: 5px;
   object-fit: cover;
   margin-right: 15px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-light);
 }
 
 .search-result-info {
@@ -478,7 +568,7 @@ body.light-mode .search-result-artist {
   max-width: 250px;
   min-width: 150px;
   cursor: pointer;
-  transition: transform 0.1s ease;
+  transition: transform var(--transition-fast);
   filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
   position: relative;
   z-index: 2;
@@ -519,7 +609,7 @@ body.light-mode .search-result-artist {
   min-width: 40px;
   height: auto;
   opacity: 0;
-  transition: opacity 0.4s ease-out, transform 0.1s ease-out;
+  transition: opacity 0.4s ease-out, transform var(--transition-fast);
   pointer-events: none;
   z-index: 9999;
   filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
@@ -539,7 +629,7 @@ body.light-mode .search-result-artist {
   min-width: 120px;
   height: auto;
   cursor: pointer;
-  transition: transform 0.1s ease;
+  transition: transform var(--transition-fast);
   filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
   user-select: none;
 }
@@ -557,7 +647,7 @@ body.light-mode .search-result-artist {
   opacity: 0;
   pointer-events: none;
   z-index: 9999;
-  transition: opacity 0.3s ease-out;
+  transition: opacity var(--transition-normal);
   width: 10vw;
   max-width: 120px;
   min-width: 80px;
@@ -575,13 +665,13 @@ body.light-mode .search-result-artist {
 #amp-label {
   font-family: "Tiny5", sans-serif;
   font-size: clamp(12px, 1.2vw, 16px);
-  color: white;
+  color: var(--text-light);
   margin-right: 1vw;
   user-select: none;
 }
 
 body.light-mode #amp-label {
-  color: #222; /* Melhor contraste */
+  color: var(--text-dark);
 }
 
 #amp-bar {
@@ -636,7 +726,7 @@ body.light-mode #amp-slider {
   font-size: clamp(10px, 0.9vw, 12px);
   font-family: "Tiny5", sans-serif;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-normal);
   pointer-events: none;
   white-space: nowrap;
   z-index: 11;
@@ -649,7 +739,7 @@ body.light-mode #amp-slider {
 body.light-mode #volume-percentage {
   background: rgba(255, 255, 255, 0.9);
   color: black;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-light);
 }
 
 .progress-container {
@@ -661,7 +751,7 @@ body.light-mode #volume-percentage {
   display: flex;
   align-items: center;
   font-family: "Tiny5", sans-serif;
-  color: white;
+  color: var(--text-light);
   user-select: none;
   justify-content: center;
   flex-wrap: wrap;
@@ -680,12 +770,12 @@ body.light-mode #volume-percentage {
   font-size: clamp(12px, 1vw, 14px);
   min-width: 40px;
   text-align: center;
-  color: white;
+  color: var(--text-light);
 }
 
 body.light-mode #current-time,
 body.light-mode #total-time {
-  color: #222; /* Melhor contraste */
+  color: var(--text-dark);
 }
 
 #progress-bar {
@@ -709,7 +799,7 @@ body.light-mode #progress-bar {
 #progress-fill {
   width: 0%;
   height: 100%;
-  background-color: lime;
+  background-color: var(--primary-color);
   border-radius: 3px;
   transition: width 0.1s linear;
 }
@@ -763,7 +853,7 @@ body.light-mode #progress-thumb {
   height: auto;
   cursor: pointer;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
-  transition: filter 0.2s ease, transform 0.1s ease;
+  transition: filter 0.2s ease, transform var(--transition-fast);
   background: transparent;
   border-radius: 4px;
   user-select: none;
@@ -775,11 +865,11 @@ body.light-mode #progress-thumb {
 }
 
 #loop-btn.active {
-  filter: invert(1) drop-shadow(0 0 8px lime);
+  filter: invert(1) drop-shadow(0 0 8px var(--primary-color));
 }
 
 body.light-mode #loop-btn.active {
-  filter: invert(0) drop-shadow(0 0 8px lime);
+  filter: invert(0) drop-shadow(0 0 8px var(--primary-color));
 }
 
 /* Ícones fixos no topo direito */
@@ -787,35 +877,43 @@ body.light-mode #loop-btn.active {
 #settings-toggle {
   position: fixed;
   top: 2vh;
-  width: 3vw;
+  width: 40px;
   max-width: 40px;
   min-width: 25px;
   height: auto;
   cursor: pointer;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+  filter: drop-shadow(var(--shadow-light));
   user-select: none;
   z-index: 30000;
-  transition: transform 0.15s ease, filter 0.3s ease;
+  transition: transform var(--transition-fast), filter var(--transition-normal);
 }
 
 #contrast-toggle { right: 2vw; }
-#settings-toggle { right: calc(2vw + 4vw + 10px); }
+#settings-toggle { right: calc(2vw + 50px); }
 
-/* ÍCONE DO PINCEL REPOSICIONADO - MAIS PRÓXIMO DA GUITARRA */
+/* CORREÇÃO CRÍTICA: Ícones NÃO devem ficar sobre o menu de guitarra */
+#guitar-customization-menu.active ~ #contrast-toggle,
+#guitar-customization-menu.active ~ #settings-toggle {
+  z-index: 10001 !important;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ÍCONE DO PINCEL REPOSICIONADO - POSIÇÃO FIXA E TAMANHO FIXO */
 #brush-toggle {
   position: absolute;
-  top: 85%; /* Mais para baixo */
-  left: 8vw; /* Mover para a esquerda da guitarra */
+  top: 85%;
+  left: 8vw;
   transform: translateY(-50%);
-  width: 2.5vw;
+  width: 35px;
   max-width: 35px;
   min-width: 20px;
   height: auto;
   cursor: pointer;
   filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8));
-  transition: transform 0.15s ease, filter 0.3s ease;
+  transition: transform var(--transition-fast), filter var(--transition-normal);
   user-select: none;
-  z-index: 10;
+  z-index: 10001;
 }
 
 #brush-toggle:active {
@@ -827,8 +925,8 @@ body.light-mode #brush-toggle {
 }
 
 body.light-mode {
-  background-color: #f8f9fa; /* Fundo mais suave */
-  color: #222; /* Texto mais escuro para melhor contraste */
+  background-color: var(--bg-light);
+  color: var(--text-dark);
 }
 
 body.light-mode #current-time,
@@ -837,7 +935,7 @@ body.light-mode #amp-label,
 body.light-mode #settings-menu,
 body.light-mode #queue-panel h3,
 body.light-mode #queue-panel ul li {
-  color: #222; /* Melhor contraste */
+  color: var(--text-dark);
 }
 
 #back-btn,
@@ -847,7 +945,7 @@ body.light-mode #queue-panel ul li {
 #settings-toggle,
 #brush-toggle {
   filter: invert(1);
-  transition: filter 0.3s ease;
+  transition: filter var(--transition-normal);
 }
 
 body.light-mode #back-btn,
@@ -869,25 +967,25 @@ body.light-mode #brush-toggle {
   max-width: 600px;
   height: 80%;
   max-height: 500px;
-  background: rgba(75, 73, 73, 0.95);
-  border-radius: 12px;
+  background: var(--bg-dark-transparent);
+  border-radius: var(--border-radius-large);
   box-shadow: 0 0 30px rgba(0,0,0,0.7);
   z-index: 9998;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
   overflow: hidden;
   padding: 0;
   font-family: "Tiny5", sans-serif;
-  color: white;
+  color: var(--text-light);
   display: flex;
   flex-direction: column;
 }
 
 /* Cor do menu adaptada ao tema */
 body.light-mode #settings-menu {
-  background: rgba(240, 240, 240, 0.95); /* Fundo mais claro */
-  color: #222; /* Texto mais escuro */
+  background: var(--bg-light-transparent);
+  color: var(--text-dark);
   box-shadow: 0 0 30px rgba(0,0,0,0.4);
 }
 
@@ -907,7 +1005,7 @@ body.light-mode #settings-menu {
   z-index: 9997;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-normal);
 }
 
 #settings-overlay.active {
@@ -922,7 +1020,7 @@ body.light-mode #settings-menu {
   width: 50px;
   height: auto;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: transform var(--transition-fast);
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
   z-index: 10000;
 }
@@ -950,11 +1048,11 @@ body.light-mode #settings-menu {
 
 .menu-item {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   padding: 20px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   border: 2px solid transparent;
   font-size: clamp(1rem, 1.2vw, 1.2rem);
   display: flex;
@@ -973,8 +1071,8 @@ body.light-mode #settings-menu {
 }
 
 body.light-mode .menu-item {
-  background: rgba(0, 0, 0, 0.08); /* Fundo mais suave */
-  color: #222; /* Texto mais escuro */
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--text-dark);
 }
 
 body.light-mode .menu-item:hover {
@@ -1025,7 +1123,7 @@ body.light-mode .menu-item:hover {
   width: 30px;
   height: auto;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: transform var(--transition-fast);
   filter: invert(1);
 }
 
@@ -1105,14 +1203,14 @@ body.light-mode .shortcut-item {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-light);
   transition: all 0.2s ease;
 }
 
 body.light-mode .key {
   background: rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(0, 0, 0, 0.3);
-  color: #222; /* Melhor contraste */
+  color: var(--text-dark);
 }
 
 .key.space {
@@ -1146,7 +1244,7 @@ body.light-mode .key {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 3px solid lime;
+  border: 3px solid var(--primary-color);
 }
 
 .creator-photo {
@@ -1159,7 +1257,7 @@ body.light-mode .key {
 .creator-details h4 {
   margin: 0 0 10px 0;
   font-size: clamp(1.2rem, 1.4vw, 1.4rem);
-  color: lime;
+  color: var(--primary-color);
 }
 
 .creator-details p {
@@ -1175,7 +1273,7 @@ body.light-mode .key {
   min-width: 25px;
   height: auto;
   cursor: pointer;
-  transition: transform 0.1s ease, filter 0.3s ease;
+  transition: transform var(--transition-fast), filter var(--transition-normal);
   user-select: none;
 }
 
@@ -1210,10 +1308,10 @@ body.light-mode #queue-btn.active {
   width: 350px;
   height: 450px;
   background: rgba(20, 20, 20, 0.97);
-  border-radius: 15px;
+  border-radius: var(--border-radius-large);
   box-shadow: 4px 0 20px rgba(0,0,0,0.7);
   z-index: 15000;
-  transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+  transition: transform var(--transition-slow), opacity var(--transition-slow);
   opacity: 0;
   pointer-events: none;
   padding: 20px;
@@ -1229,8 +1327,8 @@ body.light-mode #queue-btn.active {
 }
 
 body.light-mode #queue-panel {
-  background: rgba(240, 240, 240, 0.97); /* Fundo mais claro */
-  color: #222; /* Texto mais escuro */
+  background: var(--bg-light-transparent);
+  color: var(--text-dark);
   box-shadow: 4px 0 20px rgba(0,0,0,0.4);
 }
 
@@ -1278,8 +1376,8 @@ body.light-mode #queue-panel h3 {
   overflow: visible;
   text-overflow: clip;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border-radius: 8px;
+  transition: all var(--transition-normal);
+  border-radius: var(--border-radius);
   margin-bottom: 8px;
   display: flex;
   align-items: center;
@@ -1308,7 +1406,7 @@ body.light-mode #queue-panel ul li:hover {
   border-radius: 6px;
   object-fit: cover;
   flex-shrink: 0;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-light);
 }
 
 /* Informações da música */
@@ -1343,11 +1441,11 @@ body.light-mode .song-artist {
 
 #queue-panel ul li.current-song {
   background-color: rgba(0, 255, 0, 0.15);
-  border-left: 3px solid lime;
+  border-left: 3px solid var(--primary-color);
 }
 
 #queue-panel ul li.current-song .song-title {
-  color: lime;
+  color: var(--primary-color);
 }
 
 #queue-panel ul li.current-song .song-artist {
@@ -1359,11 +1457,73 @@ body.light-mode #queue-panel ul li.current-song {
 }
 
 body.light-mode #queue-panel ul li.current-song .song-title {
-  color: #00a800;
+  color: var(--primary-dark);
 }
 
 body.light-mode #queue-panel ul li.current-song .song-artist {
   color: rgba(0, 168, 0, 0.8);
+}
+
+/* ANIMAÇÕES MELHORADAS PARA A FILA DE MÚSICAS */
+@keyframes slideUp {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes moveUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes moveDown {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.song-moving-up {
+  animation: moveUp 0.3s ease-out forwards;
+}
+
+.song-moving-down {
+  animation: moveDown 0.3s ease-out forwards;
+}
+
+.song-slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+.song-slide-down {
+  animation: slideDown 0.4s ease-out;
+}
+
+/* Garantir que as animações funcionem suavemente */
+#queue-panel ul li {
+  transition: all var(--transition-normal);
 }
 
 #queue-scrollbar {
@@ -1414,7 +1574,7 @@ body.light-mode #queue-scroll-thumb {
   .controls-right img { 
     width: 4vw; 
     max-width: 35px; 
-    min-width: 44px; /* Tamanho mínimo para touch */
+    min-width: 44px;
     min-height: 44px;
     padding: 8px;
   }
@@ -1564,7 +1724,7 @@ body.light-mode #queue-scroll-thumb {
     width: 280px;
     height: 380px;
     box-shadow: 4px 0 20px rgba(0,0,0,0.5);
-    transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+    transition: transform var(--transition-slow), opacity var(--transition-slow);
   }
 
   #queue-panel.active {
@@ -1769,6 +1929,97 @@ body.light-mode #queue-scroll-thumb {
   #guitarra:active,
   #amp:active {
     transform: scale(0.95);
-    transition: transform 0.1s;
+    transition: transform var(--transition-fast);
   }
+}
+
+/* CORREÇÃO: Ícone do pincel não deve ficar sobre menus */
+#guitar-customization-menu.active ~ .guitar-container #brush-toggle,
+#settings-menu.active ~ .guitar-container #brush-toggle {
+  z-index: 1 !important;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* CORREÇÃO: Garantir que menus fiquem SEMPRE acima */
+#settings-menu.active,
+#guitar-customization-menu.active {
+  z-index: 10000 !important;
+}
+
+#settings-overlay.active,
+#guitar-customization-overlay.active {
+  z-index: 9999 !important;
+}
+
+/* CORREÇÃO COMPLETA: Menu de guitarra sobre todos os ícones */
+#guitar-customization-menu {
+  z-index: 10000 !important;
+}
+
+#guitar-customization-overlay {
+  z-index: 9999 !important;
+}
+
+/* Quando menu de guitarra está ABERTO */
+body:has(#guitar-customization-menu.active) #contrast-toggle,
+body:has(#guitar-customization-menu.active) #settings-toggle {
+  z-index: 1 !important;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* CORREÇÃO ALTERNATIVA usando seletor sibling */
+#guitar-customization-menu.active ~ #contrast-toggle,
+#guitar-customization-menu.active ~ #settings-toggle {
+  z-index: 1 !important;
+  pointer-events: none !important;
+  opacity: 0.3 !important;
+}
+
+/* ========== PROTEÇÃO CONTRA SELEÇÃO E CLIQUE DIREITO ========== */
+
+/* Proteção contra seleção de texto em todo o site */
+body {
+  -webkit-user-select: none; /* Chrome, Safari, Opera */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE/Edge */
+  user-select: none;         /* Padrão */
+}
+
+/* Exceção: Permitir seleção apenas na barra de pesquisa */
+#search-input {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Exceção: Permitir seleção no placeholder da pesquisa */
+#search-input::placeholder {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Proteção adicional para elementos específicos */
+#guitarra, #amp, #contrast-toggle, #settings-toggle, #brush-toggle,
+.controls-left img, .controls-right img, #queue-btn, #loop-btn,
+#guitar-customization-menu, #settings-menu, #queue-panel,
+.guitar-item, .menu-item, .search-result-item {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none; /* Impedir arrastar imagens */
+}
+
+/* Proteção contra highlight em elementos interativos */
+#guitarra:active, #amp:active, #contrast-toggle:active, 
+#settings-toggle:active, #brush-toggle:active,
+.controls-left img:active, .controls-right img:active,
+#queue-btn:active, #loop-btn:active {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
